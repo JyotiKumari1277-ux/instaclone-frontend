@@ -3,6 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import {
+  FiHome,
+  FiSearch,
+  FiPlusSquare,
+  FiHeart,
+  FiUser,
+  FiMenu,
+  FiBookmark,
+  FiFilm,
+  FiSend,
+} from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -82,32 +93,90 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <nav className="flex justify-between items-center px-6 py-4 border-b border-gray-800 sticky top-0 bg-black z-10">
-        <h1 className="text-xl font-bold font-serif">InstaClone</h1>
-        <div className="flex gap-3 items-center">
-          <button
-            onClick={() => router.push("/create")}
-            className="bg-blue-500 hover:bg-blue-600 text-sm px-4 py-2 rounded font-semibold"
-          >
-            + New Post
+    <div className="min-h-screen bg-black text-white flex">
+      {/* Sidebar - Instagram style */}
+      <aside className="hidden md:flex flex-col justify-between w-20 lg:w-64 border-r border-gray-800 p-4 fixed h-screen">
+        <div>
+          <h1 className="text-2xl font-bold mb-8 px-2 hidden lg:block">
+            InstaClone
+          </h1>
+
+          <nav className="flex flex-col gap-2">
+            <button
+              onClick={() => router.push("/")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+            >
+              <FiHome size={24} /> <span className="hidden lg:inline">Home</span>
+            </button>
+
+            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
+              <FiFilm size={24} /> <span className="hidden lg:inline">Reels</span>
+            </button>
+
+            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
+              <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
+            </button>
+
+            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
+              <FiSearch size={24} /> <span className="hidden lg:inline">Search</span>
+            </button>
+
+            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
+              <FiHeart size={24} /> <span className="hidden lg:inline">Notifications</span>
+            </button>
+
+            <button
+              onClick={() => router.push("/create")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+            >
+              <FiPlusSquare size={24} /> <span className="hidden lg:inline">Create</span>
+            </button>
+
+            <button
+              onClick={() => router.push(`/profile/${user?.id}`)}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+            >
+              <FiUser size={24} /> <span className="hidden lg:inline">Profile</span>
+            </button>
+
+            <button
+              onClick={() => router.push("/saved")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+            >
+              <FiBookmark size={24} /> <span className="hidden lg:inline">Saved</span>
+            </button>
+          </nav>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+        >
+          <FiMenu size={24} /> <span className="hidden lg:inline">More</span>
+        </button>
+      </aside>
+
+      {/* Mobile top bar */}
+      <nav className="md:hidden flex justify-between items-center px-4 py-3 border-b border-gray-800 fixed top-0 w-full bg-black z-10">
+        <h1 className="text-lg font-bold">InstaClone</h1>
+        <div className="flex gap-4 items-center">
+          <button onClick={() => router.push("/create")}>
+            <FiPlusSquare size={22} />
           </button>
-          <button
-            onClick={() => router.push(`/profile/${user?.id}`)}
-            className="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded font-semibold"
-          >
-            Profile
+          <button onClick={() => router.push("/saved")}>
+            <FiBookmark size={22} />
           </button>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-sm px-4 py-2 rounded font-semibold"
-          >
+          <button onClick={() => router.push(`/profile/${user?.id}`)}>
+            <FiUser size={22} />
+          </button>
+          <button onClick={handleLogout} className="text-red-400">
             Logout
           </button>
         </div>
       </nav>
 
-      <div className="max-w-xl mx-auto p-4">
+      {/* Main Feed */}
+      <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-xl mx-auto px-4">
         <p className="text-gray-400 mb-4">
           Welcome, {user?.name}! (@{user?.username})
         </p>
@@ -206,7 +275,7 @@ export default function Home() {
             </div>
           );
         })}
-      </div>
+      </main>
     </div>
   );
 }
