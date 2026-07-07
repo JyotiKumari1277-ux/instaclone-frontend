@@ -9,7 +9,7 @@ import {
   FiPlusSquare,
   FiHeart,
   FiUser,
-  FiMenu,
+  FiLogOut,
   FiBookmark,
   FiFilm,
   FiSend,
@@ -150,9 +150,9 @@ export default function Home() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left"
+          className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left text-red-400"
         >
-          <FiMenu size={24} /> <span className="hidden lg:inline">More</span>
+          <FiLogOut size={24} /> <span className="hidden lg:inline">Logout</span>
         </button>
       </aside>
 
