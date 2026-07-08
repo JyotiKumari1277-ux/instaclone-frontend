@@ -32,25 +32,25 @@ export default function SavedPosts() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
       <div className="max-w-3xl mx-auto px-4 pt-10">
         <div className="mb-6">
           <button
             onClick={() => router.push("/")}
-            className="text-blue-400 text-sm"
+            className="text-blue-500 dark:text-blue-400 text-sm"
           >
             ← Back to Feed
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mb-8 border-t border-gray-800 pt-4">
+        <div className="flex items-center gap-2 mb-8 border-t border-gray-200 dark:border-gray-800 pt-4">
           <FiBookmark size={20} />
           <h1 className="text-lg font-semibold">Saved Posts</h1>
         </div>
@@ -62,7 +62,7 @@ export default function SavedPosts() {
         ) : (
           <div className="grid grid-cols-3 gap-1">
             {posts.map((post) => (
-              <div key={post._id} className="aspect-square bg-gray-900">
+              <div key={post._id} className="aspect-square bg-gray-200 dark:bg-gray-900">
                 <img
                   src={post.image}
                   alt="Saved post"
