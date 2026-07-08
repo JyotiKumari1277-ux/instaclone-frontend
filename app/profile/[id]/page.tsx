@@ -18,7 +18,6 @@ export default function Profile() {
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Followers/Following list modal
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
   const [listUsers, setListUsers] = useState<any[]>([]);
   const [listLoading, setListLoading] = useState(false);
@@ -128,7 +127,7 @@ export default function Profile() {
   const isOwnProfile = currentUserId === String(params.id);
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
       <div className="max-w-3xl mx-auto px-4 pt-10">
         <div className="mb-6">
           <button
@@ -139,8 +138,9 @@ export default function Profile() {
           </button>
         </div>
 
-        <div className="flex items-center gap-10 mb-8">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-700 flex items-center justify-center text-4xl font-bold overflow-hidden shrink-0">
+        {/* Top section: avatar + info - responsive */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-10 mb-8 text-center sm:text-left">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gray-700 flex items-center justify-center text-3xl sm:text-4xl font-bold overflow-hidden shrink-0">
             {profile?.avatar ? (
               <img
                 src={profile.avatar}
@@ -152,9 +152,9 @@ export default function Profile() {
             )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-xl md:text-2xl font-semibold">
+          <div className="w-full sm:w-auto">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-4">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
                 {profile?.username}
               </h1>
 
@@ -179,7 +179,7 @@ export default function Profile() {
               )}
             </div>
 
-            <div className="flex gap-8 text-sm md:text-base mb-4">
+            <div className="flex gap-4 sm:gap-8 text-sm md:text-base mb-4 justify-center sm:justify-start">
               <span>
                 <strong>{posts.length}</strong> posts
               </span>
