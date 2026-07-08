@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { FiGrid, FiBookmark } from "react-icons/fi";
+import { FiGrid, FiBookmark, FiX } from "react-icons/fi";
 
 export default function Profile() {
   const params = useParams();
@@ -12,6 +12,11 @@ export default function Profile() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -27,6 +32,8 @@ export default function Profile() {
       const res = await api.get(`/users/${params.id}`);
       setProfile(res.data.user);
       setPosts(res.data.posts);
+      setEditName(res.data.user?.name || "");
+      setEditBio(res.data.user?.bio || "");
     } catch (err) {
       console.error(err);
     } finally {
@@ -44,6 +51,46 @@ export default function Profile() {
       });
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const openEditModal = () => {
+    setEditName(profile?.name || "");
+    setEditBio(profile?.bio || "");
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", editName);
+      formData.append("bio", editBio);
+
+      const res = await api.put("/users/me/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProfile({
+        ...profile,
+        name: res.data.name,
+        bio: res.data.bio,
+      });
+
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        parsed.name = res.data.name;
+        parsed.bio = res.data.bio;
+        localStorage.setItem("user", JSON.stringify(parsed));
+      }
+
+      setShowEditModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while updating profile.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -89,7 +136,10 @@ export default function Profile() {
               </h1>
 
               {isOwnProfile ? (
-                <button className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold">
+                <button
+                  onClick={openEditModal}
+                  className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold"
+                >
                   Edit Profile
                 </button>
               ) : (
@@ -156,6 +206,48 @@ export default function Profile() {
           ))}
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 rounded-xl w-full max-w-sm p-6 relative">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <FiX size={22} />
+            </button>
+
+            <h2 className="text-lg font-semibold mb-5">Edit Profile</h2>
+
+            <label className="block text-sm text-gray-400 mb-1">Name</label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Your name"
+            />
+
+            <label className="block text-sm text-gray-400 mb-1">Bio</label>
+            <textarea
+              value={editBio}
+              onChange={(e) => setEditBio(e.target.value)}
+              rows={3}
+              className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 mb-5 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              placeholder="Write something about yourself..."
+            />
+
+            <button
+              onClick={handleSaveProfile}
+              disabled={saving}
+              className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
