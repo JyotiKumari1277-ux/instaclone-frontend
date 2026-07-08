@@ -32,7 +32,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-10 md:gap-20">
         <div className="flex-1 text-center md:text-left order-1 md:order-1">
           <h1 className="text-3xl md:text-5xl font-bold leading-tight">
@@ -45,13 +45,13 @@ export default function Login() {
         </div>
 
         <div className="w-full max-w-sm order-2 md:order-2">
-          <div className="border border-gray-800 rounded-2xl p-8 bg-black">
+          <div className="border border-gray-300 dark:border-gray-800 rounded-2xl p-8 bg-white dark:bg-black">
             <h2 className="text-3xl font-bold text-center mb-6 font-serif">
               InstaClone
             </h2>
 
             {error && (
-              <p className="text-red-400 text-sm text-center mb-4">
+              <p className="text-red-500 dark:text-red-400 text-sm text-center mb-4">
                 {error}
               </p>
             )}
@@ -95,7 +95,7 @@ export default function Login() {
 
             <p className="text-sm text-center mt-5">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="text-blue-400 font-semibold">
+              <Link href="/signup" className="text-blue-500 dark:text-blue-400 font-semibold">
                 Sign up
               </Link>
             </p>
