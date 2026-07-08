@@ -49,8 +49,8 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="w-full max-w-md border border-gray-700 rounded-lg p-8">
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center">
+      <div className="w-full max-w-md border border-gray-300 dark:border-gray-700 rounded-lg p-8">
         <h1 className="text-2xl font-bold text-center mb-6">
           Create New Post
         </h1>
@@ -60,7 +60,7 @@ export default function CreatePostPage() {
             type="file"
             accept="image/*"
             onChange={handleImageChange}
-            className="text-sm text-gray-300"
+            className="text-sm text-gray-700 dark:text-gray-300"
           />
 
           {preview && (
@@ -76,7 +76,7 @@ export default function CreatePostPage() {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             rows={3}
-            className="bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            className="bg-gray-100 dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
           />
 
           {error && (
@@ -94,7 +94,7 @@ export default function CreatePostPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="text-gray-400 text-sm text-center"
+            className="text-gray-500 dark:text-gray-400 text-sm text-center"
           >
             Cancel
           </button>
