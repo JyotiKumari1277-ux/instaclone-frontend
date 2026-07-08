@@ -152,34 +152,14 @@ export default function Profile() {
             )}
           </div>
 
-          <div className="w-full sm:w-auto">
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mb-4">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold">
-                {profile?.username}
-              </h1>
+          <div className="w-full sm:w-auto flex flex-col items-center sm:items-start">
+            {/* Username - no button next to it on mobile */}
+            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4">
+              {profile?.username}
+            </h1>
 
-              {isOwnProfile ? (
-                <button
-                  onClick={openEditModal}
-                  className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold"
-                >
-                  Edit Profile
-                </button>
-              ) : (
-                <button
-                  onClick={handleFollow}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-semibold ${
-                    profile?.isFollowing
-                      ? "bg-gray-800 hover:bg-gray-700"
-                      : "bg-blue-500 hover:bg-blue-600"
-                  }`}
-                >
-                  {profile?.isFollowing ? "Following" : "Follow"}
-                </button>
-              )}
-            </div>
-
-            <div className="flex gap-4 sm:gap-8 text-sm md:text-base mb-4 justify-center sm:justify-start">
+            {/* Stats */}
+            <div className="flex gap-4 sm:gap-8 text-sm md:text-base mb-3">
               <span>
                 <strong>{posts.length}</strong> posts
               </span>
@@ -197,9 +177,31 @@ export default function Profile() {
               </button>
             </div>
 
+            {/* Name + Bio */}
             <p className="font-semibold text-sm">{profile?.name}</p>
             {profile?.bio && (
-              <p className="text-sm text-gray-300">{profile.bio}</p>
+              <p className="text-sm text-gray-300 mb-4">{profile.bio}</p>
+            )}
+
+            {/* Edit Profile / Follow button - below bio */}
+            {isOwnProfile ? (
+              <button
+                onClick={openEditModal}
+                className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold w-full sm:w-auto"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <button
+                onClick={handleFollow}
+                className={`px-6 py-1.5 rounded-lg text-sm font-semibold w-full sm:w-auto ${
+                  profile?.isFollowing
+                    ? "bg-gray-800 hover:bg-gray-700"
+                    : "bg-blue-500 hover:bg-blue-600"
+                }`}
+              >
+                {profile?.isFollowing ? "Following" : "Follow"}
+              </button>
             )}
           </div>
         </div>
