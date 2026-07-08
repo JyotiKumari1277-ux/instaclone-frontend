@@ -138,72 +138,74 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Top section: avatar + info - responsive */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-10 mb-8 text-center sm:text-left">
-          <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-gray-700 flex items-center justify-center text-3xl sm:text-4xl font-bold overflow-hidden shrink-0">
-            {profile?.avatar ? (
-              <img
-                src={profile.avatar}
-                alt={profile.username}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              profile?.username?.[0]?.toUpperCase()
-            )}
-          </div>
-
-          <div className="w-full sm:w-auto flex flex-col items-center sm:items-start">
-            {/* Username - no button next to it on mobile */}
-            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4">
-              {profile?.username}
-            </h1>
-
-            {/* Stats */}
-            <div className="flex gap-4 sm:gap-8 text-sm md:text-base mb-3">
-              <span>
-                <strong>{posts.length}</strong> posts
-              </span>
-              <button
-                onClick={() => openListModal("followers")}
-                className="hover:underline"
-              >
-                <strong>{profile?.followersCount || 0}</strong> followers
-              </button>
-              <button
-                onClick={() => openListModal("following")}
-                className="hover:underline"
-              >
-                <strong>{profile?.followingCount || 0}</strong> following
-              </button>
+        {/* Top section - everything left aligned */}
+        <div className="flex flex-col items-start mb-8">
+          {/* Avatar + Username side by side */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
+              {profile?.avatar ? (
+                <img
+                  src={profile.avatar}
+                  alt={profile.username}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                profile?.username?.[0]?.toUpperCase()
+              )}
             </div>
 
-            {/* Name + Bio */}
+            <h1 className="text-lg sm:text-xl font-semibold">
+              {profile?.username}
+            </h1>
+          </div>
+
+          {/* Stats */}
+          <div className="flex gap-6 text-sm md:text-base mb-3">
+            <span>
+              <strong>{posts.length}</strong> posts
+            </span>
+            <button
+              onClick={() => openListModal("followers")}
+              className="hover:underline"
+            >
+              <strong>{profile?.followersCount || 0}</strong> followers
+            </button>
+            <button
+              onClick={() => openListModal("following")}
+              className="hover:underline"
+            >
+              <strong>{profile?.followingCount || 0}</strong> following
+            </button>
+          </div>
+
+          {/* Name + Bio - left aligned */}
+          <div className="text-left mb-4">
             <p className="font-semibold text-sm">{profile?.name}</p>
             {profile?.bio && (
-              <p className="text-sm text-gray-300 mb-4">{profile.bio}</p>
-            )}
-
-            {/* Edit Profile / Follow button - below bio */}
-            {isOwnProfile ? (
-              <button
-                onClick={openEditModal}
-                className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold w-full sm:w-auto"
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <button
-                onClick={handleFollow}
-                className={`px-6 py-1.5 rounded-lg text-sm font-semibold w-full sm:w-auto ${
-                  profile?.isFollowing
-                    ? "bg-gray-800 hover:bg-gray-700"
-                    : "bg-blue-500 hover:bg-blue-600"
-                }`}
-              >
-                {profile?.isFollowing ? "Following" : "Follow"}
-              </button>
+              <p className="text-sm text-gray-300">{profile.bio}</p>
             )}
           </div>
+
+          {/* Edit Profile / Follow button */}
+          {isOwnProfile ? (
+            <button
+              onClick={openEditModal}
+              className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold w-full"
+            >
+              Edit Profile
+            </button>
+          ) : (
+            <button
+              onClick={handleFollow}
+              className={`px-6 py-1.5 rounded-lg text-sm font-semibold w-full ${
+                profile?.isFollowing
+                  ? "bg-gray-800 hover:bg-gray-700"
+                  : "bg-blue-500 hover:bg-blue-600"
+              }`}
+            >
+              {profile?.isFollowing ? "Following" : "Follow"}
+            </button>
+          )}
         </div>
 
         <div className="flex justify-center gap-16 border-t border-gray-800 pt-3">
