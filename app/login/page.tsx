@@ -34,7 +34,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-10 md:gap-20">
-        <div className="flex-1 text-center md:text-left order-2 md:order-1">
+        <div className="flex-1 text-center md:text-left order-1 md:order-1">
           <h1 className="text-3xl md:text-5xl font-bold leading-tight">
             See everyday moments from your{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500">
@@ -44,7 +44,7 @@ export default function Login() {
           </h1>
         </div>
 
-        <div className="w-full max-w-sm order-1 md:order-2">
+        <div className="w-full max-w-sm order-2 md:order-2">
           <div className="border border-gray-800 rounded-2xl p-8 bg-black">
             <h2 className="text-3xl font-bold text-center mb-6 font-serif">
               InstaClone
