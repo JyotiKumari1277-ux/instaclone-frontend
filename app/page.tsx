@@ -11,8 +11,8 @@ import {
   FiUser,
   FiLogOut,
   FiBookmark,
-  FiFilm,
   FiSend,
+  FiMessageCircle,
 } from "react-icons/fi";
 
 export default function Home() {
@@ -22,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
   const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
+  const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -84,6 +85,10 @@ export default function Home() {
     }
   };
 
+  const toggleComments = (postId: string) => {
+    setOpenComments({ ...openComments, [postId]: !openComments[postId] });
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
@@ -109,11 +114,10 @@ export default function Home() {
               <FiHome size={24} /> <span className="hidden lg:inline">Home</span>
             </button>
 
-            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
-              <FiFilm size={24} /> <span className="hidden lg:inline">Reels</span>
-            </button>
-
-            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left">
+            <button
+              onClick={() => alert("Messages feature coming soon!")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-900 text-left opacity-50"
+            >
               <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
             </button>
 
@@ -189,6 +193,7 @@ export default function Home() {
 
         {posts.map((post) => {
           const isLiked = post.likes?.includes(user?.id);
+          const isCommentsOpen = openComments[post._id];
 
           return (
             <div
@@ -214,63 +219,89 @@ export default function Home() {
               />
 
               <div className="p-3">
-                <button
-                  onClick={() => handleLike(post._id)}
-                  className={`text-sm font-semibold mr-4 ${
-                    isLiked ? "text-red-500" : "text-white"
-                  }`}
-                >
-                  {isLiked ? "♥ Liked" : "♡ Like"}
-                </button>
-                <span className="text-sm text-gray-400">
+                <div className="flex items-center gap-4 mb-2">
+                  <button
+                    onClick={() => handleLike(post._id)}
+                    className={`text-sm font-semibold ${
+                      isLiked ? "text-red-500" : "text-white"
+                    }`}
+                  >
+                    {isLiked ? "♥ Liked" : "♡ Like"}
+                  </button>
+
+                  <button
+                    onClick={() => toggleComments(post._id)}
+                    className="text-white flex items-center gap-1"
+                  >
+                    <FiMessageCircle size={18} />
+                    <span className="text-sm">
+                      {post.comments?.length || 0}
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSave(post._id)}
+                    className={`text-sm font-semibold ml-auto ${
+                      savedPosts[post._id] ? "text-yellow-400" : "text-white"
+                    }`}
+                  >
+                    {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
+                  </button>
+                </div>
+
+                <span className="text-sm text-gray-400 block mb-1">
                   {post.likes?.length || 0} likes
                 </span>
 
-                <button
-                  onClick={() => handleSave(post._id)}
-                  className={`text-sm font-semibold float-right ${
-                    savedPosts[post._id] ? "text-yellow-400" : "text-white"
-                  }`}
-                >
-                  {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
-                </button>
-
                 {post.caption && (
-                  <p className="text-sm mt-2">
+                  <p className="text-sm mt-1">
                     <span className="font-semibold">{post.user?.username}</span>{" "}
                     {post.caption}
                   </p>
                 )}
 
-                <div className="mt-2">
-                  {post.comments?.map((c: any, i: number) => (
-                    <p key={i} className="text-sm text-gray-300">
-                      <span className="font-semibold">{c.user?.username}</span>{" "}
-                      {c.text}
-                    </p>
-                  ))}
-                </div>
-
-                <div className="flex gap-2 mt-3">
-                  <input
-                    type="text"
-                    placeholder="Add a comment..."
-                    value={commentText[post._id] || ""}
-                    onChange={(e) =>
-                      setCommentText({
-                        ...commentText,
-                        [post._id]: e.target.value,
-                      })
-                    }
-                    className="flex-1 bg-gray-900 text-white text-sm border border-gray-700 rounded px-2 py-1 focus:outline-none"
-                  />
+                {!isCommentsOpen && post.comments?.length > 0 && (
                   <button
-                    onClick={() => handleComment(post._id)}
-                    className="text-blue-400 text-sm font-semibold"
+                    onClick={() => toggleComments(post._id)}
+                    className="text-gray-500 text-sm mt-2"
                   >
-                    Post
+                    View all {post.comments.length} comments
                   </button>
-                </div>
+                )}
+
+                {isCommentsOpen && (
+                  <>
+                    <div className="mt-2">
+                      {post.comments?.map((c: any, i: number) => (
+                        <p key={i} className="text-sm text-gray-300">
+                          <span className="font-semibold">{c.user?.username}</span>{" "}
+                          {c.text}
+                        </p>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2 mt-3">
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={commentText[post._id] || ""}
+                        onChange={(e) =>
+                          setCommentText({
+                            ...commentText,
+                            [post._id]: e.target.value,
+                          })
+                        }
+                        className="flex-1 bg-gray-900 text-white text-sm border border-gray-700 rounded px-2 py-1 focus:outline-none"
+                      />
+                      <button
+                        onClick={() => handleComment(post._id)}
+                        className="text-blue-400 text-sm font-semibold"
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           );
