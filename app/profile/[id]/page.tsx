@@ -18,6 +18,11 @@ export default function Profile() {
   const [editBio, setEditBio] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Followers/Following list modal
+  const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
+  const [listUsers, setListUsers] = useState<any[]>([]);
+  const [listLoading, setListLoading] = useState(false);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -94,6 +99,24 @@ export default function Profile() {
     }
   };
 
+  const openListModal = async (type: "followers" | "following") => {
+    setListModalType(type);
+    setListLoading(true);
+    try {
+      const res = await api.get(`/users/${params.id}/${type}`);
+      setListUsers(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  const goToUserProfile = (userId: string) => {
+    setListModalType(null);
+    router.push(`/profile/${userId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -160,12 +183,18 @@ export default function Profile() {
               <span>
                 <strong>{posts.length}</strong> posts
               </span>
-              <span>
+              <button
+                onClick={() => openListModal("followers")}
+                className="hover:underline"
+              >
                 <strong>{profile?.followersCount || 0}</strong> followers
-              </span>
-              <span>
+              </button>
+              <button
+                onClick={() => openListModal("following")}
+                className="hover:underline"
+              >
                 <strong>{profile?.followingCount || 0}</strong> following
-              </span>
+              </button>
             </div>
 
             <p className="font-semibold text-sm">{profile?.name}</p>
@@ -245,6 +274,61 @@ export default function Profile() {
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Followers/Following List Modal */}
+      {listModalType && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 rounded-xl w-full max-w-sm max-h-[70vh] flex flex-col relative">
+            <div className="flex items-center justify-between p-4 border-b border-gray-800">
+              <h2 className="text-base font-semibold capitalize">
+                {listModalType}
+              </h2>
+              <button
+                onClick={() => setListModalType(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {listLoading ? (
+                <p className="text-center text-gray-500 py-8 text-sm">
+                  Loading...
+                </p>
+              ) : listUsers.length === 0 ? (
+                <p className="text-center text-gray-500 py-8 text-sm">
+                  No {listModalType} yet.
+                </p>
+              ) : (
+                listUsers.map((u) => (
+                  <button
+                    key={u._id}
+                    onClick={() => goToUserProfile(u._id)}
+                    className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-800 text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
+                      {u.avatar ? (
+                        <img
+                          src={u.avatar}
+                          alt={u.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        u.username?.[0]?.toUpperCase()
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{u.username}</p>
+                      <p className="text-xs text-gray-400">{u.name}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
