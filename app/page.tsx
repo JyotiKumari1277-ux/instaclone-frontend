@@ -13,6 +13,7 @@ import {
   FiBookmark,
   FiSend,
   FiMessageCircle,
+  FiX,
 } from "react-icons/fi";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
   const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
+  const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -76,9 +78,24 @@ export default function Home() {
     const text = commentText[postId];
     if (!text || !text.trim()) return;
 
+    // Prevent duplicate submission on fast double-click
+    if (submittingComment[postId]) return;
+    setSubmittingComment({ ...submittingComment, [postId]: true });
+
     try {
       await api.post(`/posts/${postId}/comment`, { text });
       setCommentText({ ...commentText, [postId]: "" });
+      fetchPosts();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmittingComment({ ...submittingComment, [postId]: false });
+    }
+  };
+
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    try {
+      await api.delete(`/posts/${postId}/comment/${commentId}`);
       fetchPosts();
     } catch (err) {
       console.error(err);
@@ -194,6 +211,7 @@ export default function Home() {
         {posts.map((post) => {
           const isLiked = post.likes?.includes(user?.id);
           const isCommentsOpen = openComments[post._id];
+          const isSubmitting = submittingComment[post._id];
 
           return (
             <div
@@ -272,12 +290,33 @@ export default function Home() {
                 {isCommentsOpen && (
                   <>
                     <div className="mt-2">
-                      {post.comments?.map((c: any, i: number) => (
-                        <p key={i} className="text-sm text-gray-300">
-                          <span className="font-semibold">{c.user?.username}</span>{" "}
-                          {c.text}
-                        </p>
-                      ))}
+                      {post.comments?.map((c: any) => {
+                        const isOwnComment = c.user?._id === user?.id;
+                        return (
+                          <div
+                            key={c._id}
+                            className="flex justify-between items-start group"
+                          >
+                            <p className="text-sm text-gray-300">
+                              <span className="font-semibold">
+                                {c.user?.username}
+                              </span>{" "}
+                              {c.text}
+                            </p>
+                            {isOwnComment && (
+                              <button
+                                onClick={() =>
+                                  handleDeleteComment(post._id, c._id)
+                                }
+                                className="text-gray-500 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Delete comment"
+                              >
+                                <FiX size={14} />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <div className="flex gap-2 mt-3">
@@ -291,13 +330,17 @@ export default function Home() {
                             [post._id]: e.target.value,
                           })
                         }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleComment(post._id);
+                        }}
                         className="flex-1 bg-gray-900 text-white text-sm border border-gray-700 rounded px-2 py-1 focus:outline-none"
                       />
                       <button
                         onClick={() => handleComment(post._id)}
-                        className="text-blue-400 text-sm font-semibold"
+                        disabled={isSubmitting}
+                        className="text-blue-400 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        Post
+                        {isSubmitting ? "..." : "Post"}
                       </button>
                     </div>
                   </>
