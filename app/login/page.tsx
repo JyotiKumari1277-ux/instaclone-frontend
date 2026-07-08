@@ -48,9 +48,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
-            type="email"
+            type="text"
             name="email"
-            placeholder="Email"
+            placeholder="Username or Email"
             value={formData.email}
             onChange={handleChange}
             required
