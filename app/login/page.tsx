@@ -4,11 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function Login() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +20,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/auth/login", { identifier, password });
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       router.push("/");
@@ -32,7 +34,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-10 md:gap-20">
-        {/* Left side - branding */}
         <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-3xl md:text-5xl font-bold leading-tight">
             See everyday moments from your{" "}
@@ -43,7 +44,6 @@ export default function Login() {
           </h1>
         </div>
 
-        {/* Right side - login card (original style kept) */}
         <div className="w-full max-w-sm order-1 md:order-2">
           <div className="border border-gray-800 rounded-2xl p-8 bg-black">
             <h2 className="text-3xl font-bold text-center mb-6 font-serif">
@@ -58,21 +58,31 @@ export default function Login() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Email or username"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 required
                 className="bg-gray-100 text-black rounded-lg px-3 py-2.5 text-sm focus:outline-none"
               />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-gray-100 text-black rounded-lg px-3 py-2.5 text-sm focus:outline-none"
-              />
+
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full bg-gray-100 text-black rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
 
               <button
                 type="submit"
