@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { useTheme } from "./context/ThemeContext";
+import { getSocket } from "@/lib/socket";
 import {
   FiHome,
   FiSearch,
@@ -29,6 +30,7 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,8 +41,22 @@ export default function Home() {
       return;
     }
 
-    setUser(JSON.parse(storedUser));
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
     fetchPosts();
+    fetchUnreadCount(parsedUser.id);
+
+    // Setup socket connection
+    const socket = getSocket();
+    socket.emit("register", parsedUser.id);
+
+    socket.on("newNotification", () => {
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => {
+      socket.off("newNotification");
+    };
   }, [router]);
 
   const fetchPosts = async () => {
@@ -51,6 +67,16 @@ export default function Home() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUnreadCount = async (userId: string) => {
+    try {
+      const res = await api.get("/notifications");
+      const unread = res.data.filter((n: any) => !n.read).length;
+      setUnreadCount(unread);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -145,8 +171,19 @@ export default function Home() {
               <FiSearch size={24} /> <span className="hidden lg:inline">Search</span>
             </button>
 
-            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left">
-              <FiHeart size={24} /> <span className="hidden lg:inline">Notifications</span>
+            <button
+              onClick={() => router.push("/notifications")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left relative"
+            >
+              <div className="relative">
+                <FiHeart size={24} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </div>
+              <span className="hidden lg:inline">Notifications</span>
             </button>
 
             <button
@@ -196,6 +233,14 @@ export default function Home() {
         <div className="flex gap-4 items-center">
           <button onClick={toggleTheme}>
             {theme === "dark" ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+          <button onClick={() => router.push("/notifications")} className="relative">
+            <FiHeart size={22} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
           <button onClick={() => router.push("/create")}>
             <FiPlusSquare size={22} />
