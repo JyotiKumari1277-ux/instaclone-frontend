@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { FiGrid, FiBookmark, FiX } from "react-icons/fi";
+import { FiGrid, FiBookmark, FiX, FiCamera } from "react-icons/fi";
 
 export default function Profile() {
   const params = useParams();
@@ -19,6 +19,9 @@ export default function Profile() {
   const [editBio, setEditBio] = useState("");
   const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
   const [listUsers, setListUsers] = useState<any[]>([]);
@@ -117,6 +120,42 @@ export default function Profile() {
     }
   };
 
+  const handleAvatarClick = () => {
+    if (currentUserId === String(params.id)) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const res = await api.put("/users/me/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProfile({ ...profile, avatar: res.data.avatar });
+
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        parsed.avatar = res.data.avatar;
+        localStorage.setItem("user", JSON.stringify(parsed));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while updating profile picture.");
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const openListModal = async (type: "followers" | "following") => {
     setListModalType(type);
     setListLoading(true);
@@ -161,7 +200,12 @@ export default function Profile() {
         <div className="flex flex-col items-start mb-8">
           {/* Avatar + Username side by side */}
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0">
+            <div
+              onClick={handleAvatarClick}
+              className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0 ${
+                isOwnProfile ? "cursor-pointer group" : ""
+              }`}
+            >
               {profile?.avatar ? (
                 <img
                   src={profile.avatar}
@@ -171,12 +215,41 @@ export default function Profile() {
               ) : (
                 profile?.username?.[0]?.toUpperCase()
               )}
+
+              {isOwnProfile && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  {uploadingAvatar ? (
+                    <span className="text-xs">...</span>
+                  ) : (
+                    <FiCamera size={20} />
+                  )}
+                </div>
+              )}
             </div>
+
+            {isOwnProfile && (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            )}
 
             <h1 className="text-lg sm:text-xl font-semibold">
               {profile?.username}
             </h1>
           </div>
+
+          {isOwnProfile && (
+            <button
+              onClick={handleAvatarClick}
+              className="text-blue-400 text-xs font-semibold mb-4 -mt-2"
+            >
+              {uploadingAvatar ? "Uploading..." : "Change profile photo"}
+            </button>
+          )}
 
           {/* Stats */}
           <div className="flex gap-6 text-sm md:text-base mb-3">
