@@ -274,14 +274,14 @@ export default function Profile() {
             <div className="flex gap-2 w-full">
               <button
                 onClick={openEditModal}
-                className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
               >
                 Edit Profile
               </button>
               <button
                 onClick={handleAvatarClick}
                 disabled={uploadingAvatar}
-                className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap"
+                className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
               >
                 {uploadingAvatar ? "..." : "Change Photo"}
               </button>
