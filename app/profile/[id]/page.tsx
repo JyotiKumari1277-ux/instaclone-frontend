@@ -242,15 +242,6 @@ export default function Profile() {
             </h1>
           </div>
 
-          {isOwnProfile && (
-            <button
-              onClick={handleAvatarClick}
-              className="text-blue-400 text-xs font-semibold mb-4 -mt-2"
-            >
-              {uploadingAvatar ? "Uploading..." : "Change profile photo"}
-            </button>
-          )}
-
           {/* Stats */}
           <div className="flex gap-6 text-sm md:text-base mb-3">
             <span>
@@ -278,14 +269,23 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Edit Profile / Follow button */}
+          {/* Edit Profile / Change Photo / Follow button */}
           {isOwnProfile ? (
-            <button
-              onClick={openEditModal}
-              className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold w-full"
-            >
-              Edit Profile
-            </button>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={openEditModal}
+                className="bg-gray-800 hover:bg-gray-700 px-6 py-1.5 rounded-lg text-sm font-semibold flex-1"
+              >
+                Edit Profile
+              </button>
+              <button
+                onClick={handleAvatarClick}
+                disabled={uploadingAvatar}
+                className="bg-gray-800 hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap"
+              >
+                {uploadingAvatar ? "..." : "Change Photo"}
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleFollow}
