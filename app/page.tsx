@@ -167,7 +167,10 @@ export default function Home() {
               <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
             </button>
 
-            <button className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left">
+            <button
+              onClick={() => router.push("/search")}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
+            >
               <FiSearch size={24} /> <span className="hidden lg:inline">Search</span>
             </button>
 
@@ -233,6 +236,9 @@ export default function Home() {
         <div className="flex gap-4 items-center">
           <button onClick={toggleTheme}>
             {theme === "dark" ? <FiSun size={20} /> : <FiMoon size={20} />}
+          </button>
+          <button onClick={() => router.push("/search")}>
+            <FiSearch size={22} />
           </button>
           <button onClick={() => router.push("/notifications")} className="relative">
             <FiHeart size={22} />
@@ -413,4 +419,4 @@ export default function Home() {
       </main>
     </div>
   );
-}
+} 
