@@ -21,6 +21,9 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
@@ -122,18 +125,30 @@ export default function Profile() {
 
   const handleAvatarClick = () => {
     if (currentUserId === String(params.id)) {
-      fileInputRef.current?.click();
+      setShowPhotoOptions(true);
     }
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChooseNewPhoto = () => {
+    setShowPhotoOptions(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const confirmAvatarUpload = async () => {
+    if (!avatarFile) return;
 
     setUploadingAvatar(true);
     try {
       const formData = new FormData();
-      formData.append("avatar", file);
+      formData.append("avatar", avatarFile);
 
       const res = await api.put("/users/me/update", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -147,12 +162,46 @@ export default function Profile() {
         parsed.avatar = res.data.avatar;
         localStorage.setItem("user", JSON.stringify(parsed));
       }
+
+      cancelAvatarUpload();
     } catch (err) {
       console.error(err);
       alert("Something went wrong while updating profile picture.");
     } finally {
       setUploadingAvatar(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const cancelAvatarUpload = () => {
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleRemovePhoto = async () => {
+    setShowPhotoOptions(false);
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("removeAvatar", "true");
+
+      const res = await api.put("/users/me/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setProfile({ ...profile, avatar: "" });
+
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        parsed.avatar = "";
+        localStorage.setItem("user", JSON.stringify(parsed));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while removing profile picture.");
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -452,6 +501,66 @@ export default function Profile() {
                 ))
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Preview Confirmation Modal */}
+      {avatarPreview && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 rounded-xl w-full max-w-sm p-6 text-center">
+            <h2 className="text-lg font-semibold mb-4">Update Profile Photo?</h2>
+
+            <img
+              src={avatarPreview}
+              alt="Preview"
+              className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={cancelAvatarUpload}
+                disabled={uploadingAvatar}
+                className="flex-1 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
+              >
+                No
+              </button>
+              <button
+                onClick={confirmAvatarUpload}
+                disabled={uploadingAvatar}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
+              >
+                {uploadingAvatar ? "Saving..." : "Yes, Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Options Modal */}
+      {showPhotoOptions && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-gray-900 rounded-xl w-full max-w-sm overflow-hidden">
+            <button
+              onClick={handleChooseNewPhoto}
+              className="w-full text-center py-4 text-sm font-semibold text-blue-400 hover:bg-gray-800 border-b border-gray-800"
+            >
+              Upload New Photo
+            </button>
+            {profile?.avatar && (
+              <button
+                onClick={handleRemovePhoto}
+                className="w-full text-center py-4 text-sm font-semibold text-red-400 hover:bg-gray-800 border-b border-gray-800"
+              >
+                Remove Current Photo
+              </button>
+            )}
+            <button
+              onClick={() => setShowPhotoOptions(false)}
+              className="w-full text-center py-4 text-sm text-gray-300 hover:bg-gray-800"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
