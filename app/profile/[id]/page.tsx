@@ -15,7 +15,9 @@ export default function Profile() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editError, setEditError] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [listModalType, setListModalType] = useState<"followers" | "following" | null>(null);
@@ -37,6 +39,7 @@ export default function Profile() {
       setProfile(res.data.user);
       setPosts(res.data.posts);
       setEditName(res.data.user?.name || "");
+      setEditUsername(res.data.user?.username || "");
       setEditBio(res.data.user?.bio || "");
     } catch (err) {
       console.error(err);
@@ -60,15 +63,28 @@ export default function Profile() {
 
   const openEditModal = () => {
     setEditName(profile?.name || "");
+    setEditUsername(profile?.username || "");
     setEditBio(profile?.bio || "");
+    setEditError("");
     setShowEditModal(true);
   };
 
   const handleSaveProfile = async () => {
+    setEditError("");
+
+    const usernameRegex = /^[a-z0-9_.]{3,20}$/;
+    if (!usernameRegex.test(editUsername.toLowerCase())) {
+      setEditError(
+        "Username must be 3-20 characters: lowercase letters, numbers, underscore, or dot only."
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const formData = new FormData();
       formData.append("name", editName);
+      formData.append("username", editUsername);
       formData.append("bio", editBio);
 
       const res = await api.put("/users/me/update", formData, {
@@ -78,6 +94,7 @@ export default function Profile() {
       setProfile({
         ...profile,
         name: res.data.name,
+        username: res.data.username,
         bio: res.data.bio,
       });
 
@@ -85,14 +102,16 @@ export default function Profile() {
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
         parsed.name = res.data.name;
+        parsed.username = res.data.username;
         parsed.bio = res.data.bio;
         localStorage.setItem("user", JSON.stringify(parsed));
       }
 
       setShowEditModal(false);
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong while updating profile.");
+    } catch (err: any) {
+      setEditError(
+        err.response?.data?.message || "Something went wrong while updating profile."
+      );
     } finally {
       setSaving(false);
     }
@@ -243,7 +262,7 @@ export default function Profile() {
       {/* Edit Profile Modal */}
       {showEditModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-gray-900 rounded-xl w-full max-w-sm p-6 relative">
+          <div className="bg-gray-900 rounded-xl w-full max-w-sm p-6 relative max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setShowEditModal(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white"
@@ -262,14 +281,41 @@ export default function Profile() {
               placeholder="Your name"
             />
 
+            <label className="block text-sm text-gray-400 mb-1">Username</label>
+            <input
+              type="text"
+              value={editUsername}
+              onChange={(e) => setEditUsername(e.target.value)}
+              className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 mb-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="username"
+            />
+            <p className="text-xs text-gray-500 mb-4">
+              Lowercase letters, numbers, underscore only. No email or spaces.
+            </p>
+
+            <label className="block text-sm text-gray-400 mb-1">Email</label>
+            <input
+              type="text"
+              value={profile?.email || ""}
+              disabled
+              className="w-full bg-gray-800/50 text-gray-400 text-sm rounded-lg px-3 py-2 mb-1 cursor-not-allowed"
+            />
+            <p className="text-xs text-gray-500 mb-4">
+              Email can&apos;t be changed here. This is shown so you always know which email is linked to your account (useful for password reset).
+            </p>
+
             <label className="block text-sm text-gray-400 mb-1">Bio</label>
             <textarea
               value={editBio}
               onChange={(e) => setEditBio(e.target.value)}
               rows={3}
-              className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 mb-5 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full bg-gray-800 text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
               placeholder="Write something about yourself..."
             />
+
+            {editError && (
+              <p className="text-red-400 text-sm mb-4">{editError}</p>
+            )}
 
             <button
               onClick={handleSaveProfile}
