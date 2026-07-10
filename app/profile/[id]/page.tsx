@@ -229,6 +229,10 @@ export default function Profile() {
     router.push(`/profile/${userId}`);
   };
 
+  const goToPost = (postId: string) => {
+    router.push(`/post/${postId}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center">
@@ -393,7 +397,11 @@ export default function Profile() {
             </p>
           )}
           {posts.map((post) => (
-            <div key={post._id} className="aspect-square bg-gray-200 dark:bg-gray-900">
+            <div
+              key={post._id}
+              onClick={() => goToPost(post._id)}
+              className="aspect-square bg-gray-200 dark:bg-gray-900 cursor-pointer"
+            >
               <img
                 src={post.image}
                 alt="Post"

@@ -92,6 +92,12 @@ export default function ChatWindow() {
     }
   };
 
+  const goToSharedPost = (sharedPost: any) => {
+    if (sharedPost?._id) {
+      router.push(`/post/${sharedPost._id}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center">
@@ -164,7 +170,8 @@ export default function ChatWindow() {
                         <div>
                           <img
                             src={m.sharedPost.image}
-                            className="w-40 h-40 object-cover rounded-lg mb-1"
+                            onClick={() => goToSharedPost(m.sharedPost)}
+                            className="w-40 h-40 object-cover rounded-lg mb-1 cursor-pointer hover:opacity-90 transition-opacity"
                           />
                           {m.text && <p>{m.text}</p>}
                         </div>
