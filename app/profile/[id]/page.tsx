@@ -351,16 +351,24 @@ export default function Profile() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={handleFollow}
-              className={`px-6 py-1.5 rounded-lg text-sm font-semibold w-full ${
-                profile?.isFollowing
-                  ? "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
-                  : "bg-blue-500 hover:bg-blue-600 text-white"
-              }`}
-            >
-              {profile?.isFollowing ? "Following" : "Follow"}
-            </button>
+            <div className="flex gap-2 w-full">
+              <button
+                onClick={handleFollow}
+                className={`px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 ${
+                  profile?.isFollowing
+                    ? "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                {profile?.isFollowing ? "Following" : "Follow"}
+              </button>
+              <button
+                onClick={() => router.push(`/messages/${params.id}`)}
+                className="px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+              >
+                Message
+              </button>
+            </div>
           )}
         </div>
 
