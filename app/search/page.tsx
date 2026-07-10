@@ -44,11 +44,11 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
       <div className="max-w-2xl mx-auto px-4 pt-10">
         <button
           onClick={() => router.push("/")}
-          className="text-blue-400 text-sm mb-6"
+          className="text-blue-500 dark:text-blue-400 text-sm mb-6"
         >
           ← Back to Feed
         </button>
@@ -66,7 +66,7 @@ export default function SearchPage() {
             placeholder="Search by username or name..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-gray-900 text-white border border-gray-700 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            className="w-full bg-gray-100 dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:border-gray-500"
           />
         </div>
 
@@ -85,9 +85,9 @@ export default function SearchPage() {
             <div
               key={user._id}
               onClick={() => router.push(`/profile/${user._id}`)}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-900 cursor-pointer"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer"
             >
-              <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
                 {user.avatar ? (
                   <img
                     src={user.avatar}
@@ -101,7 +101,7 @@ export default function SearchPage() {
 
               <div>
                 <p className="text-sm font-semibold">{user.username}</p>
-                <p className="text-xs text-gray-400">{user.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{user.name}</p>
               </div>
             </div>
           ))}
