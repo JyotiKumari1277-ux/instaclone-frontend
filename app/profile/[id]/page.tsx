@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { FiGrid, FiBookmark, FiX, FiCamera } from "react-icons/fi";
+import { FiGrid, FiBookmark, FiX, FiCamera, FiLogOut } from "react-icons/fi";
 
 export default function Profile() {
   const params = useParams();
@@ -52,6 +52,12 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
   };
 
   const handleFollow = async () => {
@@ -318,21 +324,29 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Edit Profile / Change Photo / Follow button */}
+          {/* Edit Profile / Change Photo / Follow / Logout button */}
           {isOwnProfile ? (
-            <div className="flex gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={openEditModal}
+                  className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                >
+                  Edit Profile
+                </button>
+                <button
+                  onClick={handleAvatarClick}
+                  disabled={uploadingAvatar}
+                  className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                >
+                  {uploadingAvatar ? "..." : "Change Photo"}
+                </button>
+              </div>
               <button
-                onClick={openEditModal}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                onClick={handleLogout}
+                className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold w-full"
               >
-                Edit Profile
-              </button>
-              <button
-                onClick={handleAvatarClick}
-                disabled={uploadingAvatar}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
-              >
-                {uploadingAvatar ? "..." : "Change Photo"}
+                <FiLogOut size={16} /> Logout
               </button>
             </div>
           ) : (
