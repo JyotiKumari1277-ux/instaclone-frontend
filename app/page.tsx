@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
-import { FiMessageCircle, FiX } from "react-icons/fi";
+import ShareModal from "@/components/ShareModal";
+import { FiMessageCircle, FiX, FiSend } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
+  const [sharingPostId, setSharingPostId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -163,6 +165,10 @@ export default function Home() {
                     </span>
                   </button>
 
+                  <button onClick={() => setSharingPostId(post._id)}>
+                    <FiSend size={18} />
+                  </button>
+
                   <button
                     onClick={() => handleSave(post._id)}
                     className={`text-sm font-semibold ml-auto ${
@@ -256,6 +262,13 @@ export default function Home() {
           );
         })}
       </main>
+
+      {sharingPostId && (
+        <ShareModal
+          postId={sharingPostId}
+          onClose={() => setSharingPostId(null)}
+        />
+      )}
     </div>
   );
 }
