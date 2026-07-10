@@ -11,7 +11,6 @@ import {
   FiPlusSquare,
   FiHeart,
   FiUser,
-  FiBookmark,
   FiSend,
   FiMessageCircle,
   FiX,
@@ -26,6 +25,7 @@ export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
+  const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
   const [unreadCount, setUnreadCount] = useState(0);
@@ -82,6 +82,15 @@ export default function Home() {
     try {
       await api.put(`/posts/${postId}/like`);
       fetchPosts();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSave = async (postId: string) => {
+    try {
+      const res = await api.put(`/posts/${postId}/save`);
+      setSavedPosts({ ...savedPosts, [postId]: res.data.saved });
     } catch (err) {
       console.error(err);
     }
@@ -187,13 +196,6 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => router.push("/saved")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiBookmark size={24} /> <span className="hidden lg:inline">Saved</span>
-            </button>
-
-            <button
               onClick={toggleTheme}
               className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
             >
@@ -226,9 +228,6 @@ export default function Home() {
           </button>
           <button onClick={() => router.push("/create")}>
             <FiPlusSquare size={22} />
-          </button>
-          <button onClick={() => router.push("/saved")}>
-            <FiBookmark size={22} />
           </button>
           <button onClick={() => router.push(`/profile/${user?.id}`)}>
             <FiUser size={22} />
@@ -295,6 +294,15 @@ export default function Home() {
                     <span className="text-sm">
                       {post.comments?.length || 0}
                     </span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSave(post._id)}
+                    className={`text-sm font-semibold ml-auto ${
+                      savedPosts[post._id] ? "text-yellow-500" : "text-black dark:text-white"
+                    }`}
+                  >
+                    {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
                   </button>
                 </div>
 
