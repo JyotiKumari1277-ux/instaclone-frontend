@@ -26,7 +26,6 @@ export default function Home() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState<{ [key: string]: string }>({});
-  const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
   const [unreadCount, setUnreadCount] = useState(0);
@@ -83,15 +82,6 @@ export default function Home() {
     try {
       await api.put(`/posts/${postId}/like`);
       fetchPosts();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSave = async (postId: string) => {
-    try {
-      const res = await api.put(`/posts/${postId}/save`);
-      setSavedPosts({ ...savedPosts, [postId]: res.data.saved });
     } catch (err) {
       console.error(err);
     }
@@ -305,15 +295,6 @@ export default function Home() {
                     <span className="text-sm">
                       {post.comments?.length || 0}
                     </span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSave(post._id)}
-                    className={`text-sm font-semibold ml-auto ${
-                      savedPosts[post._id] ? "text-yellow-500" : "text-black dark:text-white"
-                    }`}
-                  >
-                    {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
                   </button>
                 </div>
 
