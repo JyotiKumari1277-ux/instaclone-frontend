@@ -153,12 +153,11 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => alert("Messages feature coming soon!")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left opacity-50"
-            >
-              <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
-            </button>
-
+  onClick={() => router.push("/messages")}
+  className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
+>
+  <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
+</button>
             <button
               onClick={() => router.push("/search")}
               className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
