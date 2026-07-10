@@ -189,13 +189,6 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => router.push(`/profile/${user?.id}`)}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiUser size={24} /> <span className="hidden lg:inline">Profile</span>
-            </button>
-
-            <button
               onClick={toggleTheme}
               className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
             >
@@ -203,6 +196,13 @@ export default function Home() {
               <span className="hidden lg:inline">
                 {theme === "dark" ? "Light Mode" : "Dark Mode"}
               </span>
+            </button>
+
+            <button
+              onClick={() => router.push(`/profile/${user?.id}`)}
+              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
+            >
+              <FiUser size={24} /> <span className="hidden lg:inline">Profile</span>
             </button>
           </nav>
         </div>
@@ -212,9 +212,6 @@ export default function Home() {
       <nav className="md:hidden flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 fixed top-0 w-full bg-white dark:bg-black z-10">
         <h1 className="text-lg font-bold">InstaClone</h1>
         <div className="flex gap-4 items-center">
-          <button onClick={toggleTheme}>
-            {theme === "dark" ? <FiSun size={20} /> : <FiMoon size={20} />}
-          </button>
           <button onClick={() => router.push("/search")}>
             <FiSearch size={22} />
           </button>
@@ -228,6 +225,9 @@ export default function Home() {
           </button>
           <button onClick={() => router.push("/create")}>
             <FiPlusSquare size={22} />
+          </button>
+          <button onClick={toggleTheme}>
+            {theme === "dark" ? <FiSun size={20} /> : <FiMoon size={20} />}
           </button>
           <button onClick={() => router.push(`/profile/${user?.id}`)}>
             <FiUser size={22} />
