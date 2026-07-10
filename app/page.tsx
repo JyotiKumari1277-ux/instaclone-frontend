@@ -3,24 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { useTheme } from "./context/ThemeContext";
-import { getSocket } from "@/lib/socket";
-import {
-  FiHome,
-  FiSearch,
-  FiPlusSquare,
-  FiHeart,
-  FiUser,
-  FiSend,
-  FiMessageCircle,
-  FiX,
-  FiSun,
-  FiMoon,
-} from "react-icons/fi";
+import Sidebar from "@/components/Sidebar";
+import { FiMessageCircle, FiX } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +15,6 @@ export default function Home() {
   const [savedPosts, setSavedPosts] = useState<{ [key: string]: boolean }>({});
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
-  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,19 +28,6 @@ export default function Home() {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
     fetchPosts();
-    fetchUnreadCount(parsedUser.id);
-
-    // Setup socket connection
-    const socket = getSocket();
-    socket.emit("register", parsedUser.id);
-
-    socket.on("newNotification", () => {
-      setUnreadCount((prev) => prev + 1);
-    });
-
-    return () => {
-      socket.off("newNotification");
-    };
   }, [router]);
 
   const fetchPosts = async () => {
@@ -65,16 +38,6 @@ export default function Home() {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchUnreadCount = async (userId: string) => {
-    try {
-      const res = await api.get("/notifications");
-      const unread = res.data.filter((n: any) => !n.read).length;
-      setUnreadCount(unread);
-    } catch (err) {
-      console.error(err);
     }
   };
 
@@ -137,102 +100,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
-      {/* Sidebar - Instagram style */}
-      <aside className="hidden md:flex flex-col justify-between w-20 lg:w-64 border-r border-gray-200 dark:border-gray-800 p-4 fixed h-screen">
-        <div>
-          <h1 className="text-2xl font-bold mb-8 px-2 hidden lg:block">
-            InstaClone
-          </h1>
-
-          <nav className="flex flex-col gap-2">
-            <button
-              onClick={() => router.push("/")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiHome size={24} /> <span className="hidden lg:inline">Home</span>
-            </button>
-
-            <button
-  onClick={() => router.push("/messages")}
-  className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
->
-  <FiSend size={24} /> <span className="hidden lg:inline">Messages</span>
-</button>
-            <button
-              onClick={() => router.push("/search")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiSearch size={24} /> <span className="hidden lg:inline">Search</span>
-            </button>
-
-            <button
-              onClick={() => router.push("/notifications")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left relative"
-            >
-              <div className="relative">
-                <FiHeart size={24} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </div>
-              <span className="hidden lg:inline">Notifications</span>
-            </button>
-
-            <button
-              onClick={() => router.push("/create")}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiPlusSquare size={24} /> <span className="hidden lg:inline">Create</span>
-            </button>
-
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              {theme === "dark" ? <FiSun size={24} /> : <FiMoon size={24} />}
-              <span className="hidden lg:inline">
-                {theme === "dark" ? "Light Mode" : "Dark Mode"}
-              </span>
-            </button>
-
-            <button
-              onClick={() => router.push(`/profile/${user?.id}`)}
-              className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left"
-            >
-              <FiUser size={24} /> <span className="hidden lg:inline">Profile</span>
-            </button>
-          </nav>
-        </div>
-      </aside>
-
-      {/* Mobile top bar */}
-      <nav className="md:hidden flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 fixed top-0 w-full bg-white dark:bg-black z-10">
-        <h1 className="text-lg font-bold">InstaClone</h1>
-        <div className="flex gap-4 items-center">
-          <button onClick={() => router.push("/search")}>
-            <FiSearch size={22} />
-          </button>
-          <button onClick={() => router.push("/notifications")} className="relative">
-            <FiHeart size={22} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
-          <button onClick={() => router.push("/create")}>
-            <FiPlusSquare size={22} />
-          </button>
-          <button onClick={toggleTheme}>
-            {theme === "dark" ? <FiSun size={20} /> : <FiMoon size={20} />}
-          </button>
-          <button onClick={() => router.push(`/profile/${user?.id}`)}>
-            <FiUser size={22} />
-          </button>
-        </div>
-      </nav>
+      <Sidebar />
 
       {/* Main Feed */}
       <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-xl mx-auto px-4">
