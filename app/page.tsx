@@ -11,7 +11,6 @@ import {
   FiPlusSquare,
   FiHeart,
   FiUser,
-  FiLogOut,
   FiBookmark,
   FiSend,
   FiMessageCircle,
@@ -78,12 +77,6 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.push("/login");
   };
 
   const handleLike = async (postId: string) => {
@@ -221,13 +214,6 @@ export default function Home() {
             </button>
           </nav>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left text-red-500 dark:text-red-400"
-        >
-          <FiLogOut size={24} /> <span className="hidden lg:inline">Logout</span>
-        </button>
       </aside>
 
       {/* Mobile top bar */}
@@ -256,9 +242,6 @@ export default function Home() {
           </button>
           <button onClick={() => router.push(`/profile/${user?.id}`)}>
             <FiUser size={22} />
-          </button>
-          <button onClick={handleLogout} className="text-red-500 dark:text-red-400">
-            Logout
           </button>
         </div>
       </nav>
@@ -419,4 +402,4 @@ export default function Home() {
       </main>
     </div>
   );
-} 
+}
