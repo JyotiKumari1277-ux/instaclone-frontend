@@ -84,10 +84,19 @@ export default function Login() {
                 </button>
               </div>
 
+              <div className="text-right -mt-1">
+                <Link
+                  href="/forgot-password"
+                  className="text-blue-500 dark:text-blue-400 text-xs"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg text-sm mt-2"
+                className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2.5 rounded-lg text-sm mt-1"
               >
                 {loading ? "Logging in..." : "Log In"}
               </button>
