@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
-import { FiX, FiMessageCircle, FiTrash2 } from "react-icons/fi";
+import { FiX, FiMessageCircle, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 export default function PostDetail() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const postId = params.id as string;
+  const fromProfileId = searchParams.get("from");
 
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -16,6 +18,7 @@ export default function PostDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [deleting, setDeleting] = useState(false);
+  const [postList, setPostList] = useState<any[]>([]);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -23,7 +26,16 @@ export default function PostDetail() {
     fetchPost();
   }, [postId]);
 
+  useEffect(() => {
+    if (fromProfileId) {
+      fetchPostList(fromProfileId);
+    } else {
+      setPostList([]);
+    }
+  }, [fromProfileId]);
+
   const fetchPost = async () => {
+    setLoading(true);
     try {
       const res = await api.get(`/posts/${postId}`);
       setPost(res.data);
@@ -33,6 +45,26 @@ export default function PostDetail() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPostList = async (profileId: string) => {
+    try {
+      const res = await api.get(`/users/${profileId}`);
+      setPostList(res.data.posts || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const currentIndex = postList.findIndex((p) => p._id === postId);
+  const prevPost = currentIndex > 0 ? postList[currentIndex - 1] : null;
+  const nextPost =
+    currentIndex >= 0 && currentIndex < postList.length - 1
+      ? postList[currentIndex + 1]
+      : null;
+
+  const goToNeighborPost = (neighborId: string) => {
+    router.push(`/post/${neighborId}?from=${fromProfileId}`);
   };
 
   const handleLike = async () => {
@@ -64,7 +96,7 @@ export default function PostDetail() {
     setDeleting(true);
     try {
       await api.delete(`/posts/${postId}`);
-      router.push("/");
+      router.push(fromProfileId ? `/profile/${fromProfileId}` : "/");
     } catch (err) {
       console.error(err);
       alert("Something went wrong while deleting the post.");
@@ -98,7 +130,27 @@ export default function PostDetail() {
   const isOwnPost = post.user?._id === user?.id;
 
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center p-4 relative">
+      {prevPost && (
+        <button
+          onClick={() => goToNeighborPost(prevPost._id)}
+          className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 z-20 hover:scale-105 transition-transform"
+          title="Previous post"
+        >
+          <FiChevronLeft size={24} />
+        </button>
+      )}
+
+      {nextPost && (
+        <button
+          onClick={() => goToNeighborPost(nextPost._id)}
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 shadow-lg rounded-full p-2 z-20 hover:scale-105 transition-transform"
+          title="Next post"
+        >
+          <FiChevronRight size={24} />
+        </button>
+      )}
+
       <div className="w-full max-w-3xl border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden relative">
         <button
           onClick={() => router.back()}
