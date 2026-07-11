@@ -9,6 +9,7 @@ export default function SavedPosts() {
   const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unsavingId, setUnsavingId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -27,6 +28,19 @@ export default function SavedPosts() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUnsave = async (e: React.MouseEvent, postId: string) => {
+    e.stopPropagation();
+    setUnsavingId(postId);
+    try {
+      await api.put(`/posts/${postId}/save`);
+      setPosts((prev) => prev.filter((p) => p._id !== postId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUnsavingId(null);
     }
   };
 
@@ -62,12 +76,24 @@ export default function SavedPosts() {
         ) : (
           <div className="grid grid-cols-3 gap-1">
             {posts.map((post) => (
-              <div key={post._id} className="aspect-square bg-gray-200 dark:bg-gray-900">
+              <div
+                key={post._id}
+                onClick={() => router.push(`/post/${post._id}`)}
+                className="relative aspect-square bg-gray-200 dark:bg-gray-900 cursor-pointer group"
+              >
                 <img
                   src={post.image}
                   alt="Saved post"
                   className="w-full h-full object-cover"
                 />
+                <button
+                  onClick={(e) => handleUnsave(e, post._id)}
+                  disabled={unsavingId === post._id}
+                  title="Unsave"
+                  className="absolute top-2 right-2 bg-black/60 text-yellow-400 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                >
+                  <FiBookmark size={16} className="fill-yellow-400" />
+                </button>
               </div>
             ))}
           </div>
