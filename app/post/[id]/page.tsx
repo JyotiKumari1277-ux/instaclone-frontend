@@ -107,7 +107,7 @@ export default function PostDetail() {
           <FiX size={20} />
         </button>
 
-        <div className="flex items-center gap-2 p-3">
+        <div className="flex items-center gap-2 p-3 pr-14">
           <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
             {post.user?.username?.[0]?.toUpperCase()}
           </div>
