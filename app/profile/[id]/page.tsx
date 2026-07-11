@@ -250,22 +250,14 @@ export default function Profile() {
 
       <div className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6">
         <div className="max-w-3xl mx-auto px-4">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6">
             <button
               onClick={() => router.push("/")}
               className="text-blue-500 dark:text-blue-400 text-sm"
             >
               ← Back to Feed
             </button>
-
-            {isOwnProfile && (
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1 text-red-500 dark:text-red-400 text-sm font-semibold"
-              >
-                <FiLogOut size={16} /> Logout
-              </button>
-            )}
+            
           </div>
 
           <div className="flex flex-col items-start mb-8">

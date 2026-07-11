@@ -14,6 +14,7 @@ import {
   FiSend,
   FiSun,
   FiMoon,
+  FiLogOut,
 } from "react-icons/fi";
 
 export default function Sidebar() {
@@ -51,6 +52,12 @@ export default function Sidebar() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
   };
 
   const isActive = (path: string) =>
@@ -126,6 +133,13 @@ export default function Sidebar() {
             </button>
           </nav>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-4 px-2 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 text-left text-red-500 dark:text-red-400"
+        >
+          <FiLogOut size={24} /> <span className="hidden lg:inline">Logout</span>
+        </button>
       </aside>
 
       {/* Mobile top bar */}
@@ -154,6 +168,9 @@ export default function Sidebar() {
           </button>
           <button onClick={() => router.push(`/profile/${user?.id}`)}>
             <FiUser size={22} />
+          </button>
+          <button onClick={handleLogout} className="text-red-500 dark:text-red-400">
+            <FiLogOut size={20} />
           </button>
         </div>
       </nav>
