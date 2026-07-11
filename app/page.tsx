@@ -34,6 +34,10 @@ export default function Home() {
   const [loadingViewers, setLoadingViewers] = useState(false);
   const [addingToStory, setAddingToStory] = useState<string | null>(null);
 
+  // Suggested users state
+  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  const [followingIds, setFollowingIds] = useState<{ [key: string]: boolean }>({});
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -47,6 +51,7 @@ export default function Home() {
     setUser(parsedUser);
     fetchPosts();
     fetchStories();
+    fetchSuggestedUsers();
   }, [router]);
 
   const fetchPosts = async () => {
@@ -64,6 +69,24 @@ export default function Home() {
     try {
       const res = await api.get("/stories");
       setStoryGroups(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchSuggestedUsers = async () => {
+    try {
+      const res = await api.get("/users/suggestions/list");
+      setSuggestedUsers(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleFollowSuggestion = async (userId: string) => {
+    try {
+      await api.put(`/users/${userId}/follow`);
+      setFollowingIds({ ...followingIds, [userId]: true });
     } catch (err) {
       console.error(err);
     }
@@ -395,6 +418,48 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {/* Suggested for you */}
+        {suggestedUsers.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-sm font-semibold text-gray-500 mb-3">
+              Suggested for you
+            </h3>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {suggestedUsers.map((s) => (
+                <div
+                  key={s._id}
+                  className="flex flex-col items-center gap-2 flex-shrink-0 w-24 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+                >
+                  <div
+                    onClick={() => router.push(`/profile/${s._id}`)}
+                    className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden cursor-pointer"
+                  >
+                    {s.avatar ? (
+                      <img src={s.avatar} alt={s.username} className="w-full h-full object-cover" />
+                    ) : (
+                      s.username?.[0]?.toUpperCase()
+                    )}
+                  </div>
+                  <p className="text-xs font-semibold truncate w-full text-center">
+                    {s.username}
+                  </p>
+                  <button
+                    onClick={() => handleFollowSuggestion(s._id)}
+                    disabled={followingIds[s._id]}
+                    className={`text-xs font-semibold px-3 py-1 rounded w-full ${
+                      followingIds[s._id]
+                        ? "bg-gray-200 dark:bg-gray-800 text-gray-500"
+                        : "bg-blue-500 hover:bg-blue-600 text-white"
+                    }`}
+                  >
+                    {followingIds[s._id] ? "Following" : "Follow"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           Welcome, {user?.name}! (@{user?.username})
