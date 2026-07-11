@@ -347,6 +347,9 @@ export default function Home() {
   const isOwnStory = activeGroup?.user?._id === user?.id;
   const isStoryLiked = activeStory?.likes?.includes(user?.id);
 
+  const isGroupSeen = (group: any) =>
+    group.stories.every((s: any) => s.viewers?.includes(user?.id));
+
   const visibleSuggestedUsers = suggestedUsers.filter((s) => !dismissedIds[s._id]);
   const showInlineSuggestions = followingCount === 0 && visibleSuggestedUsers.length > 0;
   const showSidebarSuggestions = (followingCount ?? 0) > 0 && visibleSuggestedUsers.length > 0;
@@ -424,23 +427,35 @@ export default function Home() {
                 onClick={() =>
                   myStoryGroup ? openStoryViewer(0) : handleStoryUploadClick()
                 }
-                className={`relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer overflow-hidden ${
+                className={`relative w-16 h-16 rounded-full p-0.5 cursor-pointer ${
                   myStoryGroup
-                    ? "ring-2 ring-pink-500"
-                    : "bg-gray-200 dark:bg-gray-800"
+                    ? isGroupSeen(myStoryGroup)
+                      ? "bg-gray-300 dark:bg-gray-700"
+                      : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"
+                    : ""
                 }`}
               >
-                {user?.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt="You"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-lg font-bold">
-                    {user?.username?.[0]?.toUpperCase()}
-                  </span>
-                )}
+                <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-black p-0.5">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt="You"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-lg font-bold">
+                        {user?.username?.[0]?.toUpperCase()}
+                      </span>
+                    )}
+
+                    {uploadingStory && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span className="text-white text-xs">...</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {!myStoryGroup && (
                   <div
@@ -451,12 +466,6 @@ export default function Home() {
                     className="absolute bottom-0 right-0 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-black"
                   >
                     <FiPlus size={12} className="text-white" />
-                  </div>
-                )}
-
-                {uploadingStory && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white text-xs">...</span>
                   </div>
                 )}
               </div>
@@ -479,18 +488,28 @@ export default function Home() {
                 className="flex flex-col items-center gap-1 flex-shrink-0"
                 onClick={() => openStoryViewer(myStoryGroup ? idx + 1 : idx)}
               >
-                <div className="w-16 h-16 rounded-full ring-2 ring-pink-500 flex items-center justify-center cursor-pointer overflow-hidden">
-                  {group.user.avatar ? (
-                    <img
-                      src={group.user.avatar}
-                      alt={group.user.username}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-bold bg-gray-200 dark:bg-gray-800 w-full h-full flex items-center justify-center">
-                      {group.user.username?.[0]?.toUpperCase()}
-                    </span>
-                  )}
+                <div
+                  className={`w-16 h-16 rounded-full p-0.5 cursor-pointer ${
+                    isGroupSeen(group)
+                      ? "bg-gray-300 dark:bg-gray-700"
+                      : "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600"
+                  }`}
+                >
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-black p-0.5">
+                    <div className="w-full h-full rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                      {group.user.avatar ? (
+                        <img
+                          src={group.user.avatar}
+                          alt={group.user.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg font-bold w-full h-full flex items-center justify-center">
+                          {group.user.username?.[0]?.toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <span className="text-xs text-gray-600 dark:text-gray-400 truncate w-16 text-center">
                   {group.user.username}
