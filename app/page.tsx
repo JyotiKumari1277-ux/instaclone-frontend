@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import ShareModal from "@/components/ShareModal";
-import { FiMessageCircle, FiX, FiSend, FiPlus, FiHeart, FiTrash2 } from "react-icons/fi";
+import { FiMessageCircle, FiX, FiSend, FiPlus, FiHeart, FiTrash2, FiEye } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -27,6 +27,11 @@ export default function Home() {
   const [deletingStory, setDeletingStory] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+
+  // Seen-by state
+  const [showViewersModal, setShowViewersModal] = useState(false);
+  const [viewersData, setViewersData] = useState<any>(null);
+  const [loadingViewers, setLoadingViewers] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -193,6 +198,24 @@ export default function Home() {
     } finally {
       setSendingReply(false);
     }
+  };
+
+  const openViewersModal = async (storyId: string) => {
+    setShowViewersModal(true);
+    setLoadingViewers(true);
+    try {
+      const res = await api.get(`/stories/${storyId}/viewers`);
+      setViewersData(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingViewers(false);
+    }
+  };
+
+  const closeViewersModal = () => {
+    setShowViewersModal(false);
+    setViewersData(null);
   };
 
   const handleLike = async (postId: string) => {
@@ -572,6 +595,22 @@ export default function Home() {
             className="max-h-full max-w-full object-contain"
           />
 
+          {/* Seen by (own story only) */}
+          {isOwnStory && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openViewersModal(activeStory._id);
+              }}
+              className="absolute bottom-20 left-4 flex items-center gap-1 text-white z-20"
+            >
+              <FiEye size={16} />
+              <span className="text-sm">
+                Seen by {activeStory.viewers?.length || 0}
+              </span>
+            </button>
+          )}
+
           {/* Reply + Like + Delete bar */}
           <div
             className="absolute bottom-6 left-0 right-0 flex items-center gap-3 px-4 z-20"
@@ -623,6 +662,68 @@ export default function Home() {
                 <FiTrash2 size={24} />
               </button>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Viewers + Likes Modal (own story) */}
+      {showViewersModal && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-end sm:items-center justify-center z-[60] px-4"
+          onClick={closeViewersModal}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-t-xl sm:rounded-xl w-full max-w-sm max-h-[70vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="text-base font-semibold">
+                {loadingViewers
+                  ? "Loading..."
+                  : `Seen by ${viewersData?.viewCount || 0} · Liked by ${viewersData?.likeCount || 0}`}
+              </h2>
+              <button onClick={closeViewersModal}>
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1">
+              {loadingViewers ? (
+                <p className="text-center text-gray-500 py-8 text-sm">
+                  Loading...
+                </p>
+              ) : !viewersData?.viewers?.length ? (
+                <p className="text-center text-gray-500 py-8 text-sm">
+                  No views yet.
+                </p>
+              ) : (
+                viewersData.viewers.map((v: any) => (
+                  <div
+                    key={v._id}
+                    className="flex items-center gap-3 px-4 py-3"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
+                      {v.avatar ? (
+                        <img
+                          src={v.avatar}
+                          alt={v.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        v.username?.[0]?.toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold">{v.username}</p>
+                      <p className="text-xs text-gray-500">{v.name}</p>
+                    </div>
+                    {v.liked && (
+                      <FiHeart size={16} className="fill-red-500 text-red-500" />
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

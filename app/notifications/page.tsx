@@ -91,10 +91,14 @@ export default function NotificationsPage() {
                     <span className="font-semibold">
                       {n.sender?.username}
                     </span>{" "}
-                    {n.type === "like" ? (
+                    {n.type === "like" && (
                       <>liked your post <FiHeart className="inline text-red-500" size={14} /></>
-                    ) : (
+                    )}
+                    {n.type === "comment" && (
                       <>commented on your post <FiMessageCircle className="inline" size={14} /></>
+                    )}
+                    {n.type === "story_like" && (
+                      <>liked your story <FiHeart className="inline text-red-500" size={14} /></>
                     )}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -107,6 +111,14 @@ export default function NotificationsPage() {
                     src={n.post.image}
                     alt="Post"
                     className="w-10 h-10 object-cover rounded"
+                  />
+                )}
+
+                {n.story?.image && (
+                  <img
+                    src={n.story.image}
+                    alt="Story"
+                    className="w-10 h-10 object-cover rounded-full ring-2 ring-pink-500"
                   />
                 )}
               </div>
