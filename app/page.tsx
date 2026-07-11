@@ -37,6 +37,7 @@ export default function Home() {
   // Suggested users state
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [followingIds, setFollowingIds] = useState<{ [key: string]: boolean }>({});
+  const [dismissedIds, setDismissedIds] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -90,6 +91,10 @@ export default function Home() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleDismissSuggestion = (userId: string) => {
+    setDismissedIds({ ...dismissedIds, [userId]: true });
   };
 
   const handleStoryUploadClick = () => {
@@ -330,6 +335,8 @@ export default function Home() {
   const isOwnStory = activeGroup?.user?._id === user?.id;
   const isStoryLiked = activeStory?.likes?.includes(user?.id);
 
+  const visibleSuggestedUsers = suggestedUsers.filter((s) => !dismissedIds[s._id]);
+
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
       <Sidebar />
@@ -420,17 +427,25 @@ export default function Home() {
         </div>
 
         {/* Suggested for you */}
-        {suggestedUsers.length > 0 && (
+        {visibleSuggestedUsers.length > 0 && (
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-500 mb-3">
               Suggested for you
             </h3>
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {suggestedUsers.map((s) => (
+              {visibleSuggestedUsers.map((s) => (
                 <div
                   key={s._id}
-                  className="flex flex-col items-center gap-2 flex-shrink-0 w-24 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+                  className="relative flex flex-col items-center gap-2 flex-shrink-0 w-24 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
                 >
+                  <button
+                    onClick={() => handleDismissSuggestion(s._id)}
+                    className="absolute top-1 right-1 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                    title="Remove suggestion"
+                  >
+                    <FiX size={14} />
+                  </button>
+
                   <div
                     onClick={() => router.push(`/profile/${s._id}`)}
                     className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden cursor-pointer"
