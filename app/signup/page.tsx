@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiCamera } from "react-icons/fi";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -58,7 +58,8 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black">
       <div className="w-full max-w-sm border border-gray-300 dark:border-gray-700 rounded-lg p-8">
-        <h1 className="text-3xl font-bold text-black dark:text-white text-center mb-6 font-serif">
+        <h1 className="text-3xl font-bold text-black dark:text-white text-center mb-6 font-serif flex items-center justify-center gap-2">
+          <FiCamera size={26} className="text-pink-500" />
           InstaClone
         </h1>
 

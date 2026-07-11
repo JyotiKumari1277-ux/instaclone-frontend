@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiCamera } from "react-icons/fi";
 
 export default function Login() {
   const router = useRouter();
@@ -46,7 +46,8 @@ export default function Login() {
 
         <div className="w-full max-w-sm order-2 md:order-2">
           <div className="border border-gray-300 dark:border-gray-800 rounded-2xl p-8 bg-white dark:bg-black">
-            <h2 className="text-3xl font-bold text-center mb-6 font-serif">
+            <h2 className="text-3xl font-bold text-center mb-6 font-serif flex items-center justify-center gap-2">
+              <FiCamera size={26} className="text-pink-500" />
               InstaClone
             </h2>
 

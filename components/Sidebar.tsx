@@ -15,6 +15,7 @@ import {
   FiSun,
   FiMoon,
   FiLogOut,
+  FiCamera,
 } from "react-icons/fi";
 
 export default function Sidebar() {
@@ -73,7 +74,8 @@ export default function Sidebar() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col justify-between w-20 lg:w-64 border-r border-gray-200 dark:border-gray-800 p-4 fixed h-screen">
         <div>
-          <h1 className="text-2xl font-bold mb-8 px-2 hidden lg:block">
+          <h1 className="text-2xl font-bold mb-8 px-2 hidden lg:flex items-center gap-2">
+            <FiCamera size={24} className="text-pink-500" />
             InstaClone
           </h1>
 
@@ -144,7 +146,10 @@ export default function Sidebar() {
 
       {/* Mobile top bar */}
       <nav className="md:hidden flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 fixed top-0 w-full bg-white dark:bg-black z-10">
-        <h1 className="text-lg font-bold">InstaClone</h1>
+        <h1 className="text-lg font-bold flex items-center gap-2">
+          <FiCamera size={20} className="text-pink-500" />
+          InstaClone
+        </h1>
         <div className="flex gap-4 items-center">
           <button onClick={() => router.push("/search")}>
             <FiSearch size={22} />
