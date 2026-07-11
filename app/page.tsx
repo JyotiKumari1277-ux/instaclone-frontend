@@ -146,7 +146,6 @@ export default function Home() {
     try {
       await api.put(`/stories/${storyId}/like`);
 
-      // Update local state immediately so UI feels instant
       setStoryGroups((prevGroups) =>
         prevGroups.map((group) => ({
           ...group,
@@ -640,18 +639,24 @@ export default function Home() {
               </div>
             )}
 
-            <button
-              onClick={() => handleLikeStory(activeStory._id)}
-              className="flex items-center gap-1 text-white"
-            >
-              <FiHeart
-                size={26}
-                className={isStoryLiked ? "fill-red-500 text-red-500" : "text-white"}
-              />
-              {activeStory.likes?.length > 0 && (
-                <span className="text-sm">{activeStory.likes.length}</span>
-              )}
-            </button>
+            {!isOwnStory && (
+              <button
+                onClick={() => handleLikeStory(activeStory._id)}
+                className="flex items-center gap-1 text-white"
+              >
+                <FiHeart
+                  size={26}
+                  className={isStoryLiked ? "fill-red-500 text-red-500" : "text-white"}
+                />
+              </button>
+            )}
+
+            {isOwnStory && activeStory.likes?.length > 0 && (
+              <span className="flex items-center gap-1 text-white text-sm">
+                <FiHeart size={20} className="fill-red-500 text-red-500" />
+                {activeStory.likes.length}
+              </span>
+            )}
 
             {isOwnStory && (
               <button
