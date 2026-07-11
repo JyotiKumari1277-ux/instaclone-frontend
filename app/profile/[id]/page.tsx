@@ -245,357 +245,352 @@ export default function Profile() {
   const isOwnProfile = currentUserId === String(params.id);
 
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white overflow-x-hidden">
-      <div className="max-w-3xl mx-auto px-4 pt-10">
-        <div className="mb-6 flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="text-blue-500 dark:text-blue-400 text-sm"
-          >
-            ← Back to Feed
-          </button>
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white overflow-x-hidden flex">
+      <Sidebar />
 
-          {isOwnProfile && (
+      <div className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="mb-6 flex items-center justify-between">
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-1 text-red-500 dark:text-red-400 text-sm font-semibold"
+              onClick={() => router.push("/")}
+              className="text-blue-500 dark:text-blue-400 text-sm"
             >
-              <FiLogOut size={16} /> Logout
+              ← Back to Feed
             </button>
-          )}
-        </div>
-
-        {/* Top section - everything left aligned */}
-        <div className="flex flex-col items-start mb-8">
-          {/* Avatar + Username side by side */}
-          <div className="flex items-center gap-4 mb-4">
-            <div
-              onClick={handleAvatarClick}
-              className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0 ${
-                isOwnProfile ? "cursor-pointer group" : ""
-              }`}
-            >
-              {profile?.avatar ? (
-                <img
-                  src={profile.avatar}
-                  alt={profile.username}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                profile?.username?.[0]?.toUpperCase()
-              )}
-
-              {isOwnProfile && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  {uploadingAvatar ? (
-                    <span className="text-xs">...</span>
-                  ) : (
-                    <FiCamera size={20} />
-                  )}
-                </div>
-              )}
-            </div>
 
             {isOwnProfile && (
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-            )}
-
-            <h1 className="text-lg sm:text-xl font-semibold">
-              {profile?.username}
-            </h1>
-          </div>
-
-          {/* Stats */}
-          <div className="flex gap-6 text-sm md:text-base mb-3">
-            <span>
-              <strong>{posts.length}</strong> posts
-            </span>
-            <button
-              onClick={() => openListModal("followers")}
-              className="hover:underline"
-            >
-              <strong>{profile?.followersCount || 0}</strong> followers
-            </button>
-            <button
-              onClick={() => openListModal("following")}
-              className="hover:underline"
-            >
-              <strong>{profile?.followingCount || 0}</strong> following
-            </button>
-          </div>
-
-          {/* Name + Bio - left aligned */}
-          <div className="text-left mb-4">
-            <p className="font-semibold text-sm">{profile?.name}</p>
-            {profile?.bio && (
-              <p className="text-sm text-gray-600 dark:text-gray-300">{profile.bio}</p>
-            )}
-          </div>
-
-          {/* Edit Profile / Change Photo / Follow button */}
-          {isOwnProfile ? (
-            <div className="flex gap-2 w-full">
               <button
-                onClick={openEditModal}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-red-500 dark:text-red-400 text-sm font-semibold"
               >
-                Edit Profile
+                <FiLogOut size={16} /> Logout
               </button>
-              <button
+            )}
+          </div>
+
+          <div className="flex flex-col items-start mb-8">
+            <div className="flex items-center gap-4 mb-4">
+              <div
                 onClick={handleAvatarClick}
-                disabled={uploadingAvatar}
-                className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
-              >
-                {uploadingAvatar ? "..." : "Change Photo"}
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2 w-full">
-              <button
-                onClick={handleFollow}
-                className={`px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 ${
-                  profile?.isFollowing
-                    ? "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden shrink-0 ${
+                  isOwnProfile ? "cursor-pointer group" : ""
                 }`}
               >
-                {profile?.isFollowing ? "Following" : "Follow"}
+                {profile?.avatar ? (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  profile?.username?.[0]?.toUpperCase()
+                )}
+
+                {isOwnProfile && (
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                    {uploadingAvatar ? (
+                      <span className="text-xs">...</span>
+                    ) : (
+                      <FiCamera size={20} />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {isOwnProfile && (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              )}
+
+              <h1 className="text-lg sm:text-xl font-semibold">
+                {profile?.username}
+              </h1>
+            </div>
+
+            <div className="flex gap-6 text-sm md:text-base mb-3">
+              <span>
+                <strong>{posts.length}</strong> posts
+              </span>
+              <button
+                onClick={() => openListModal("followers")}
+                className="hover:underline"
+              >
+                <strong>{profile?.followersCount || 0}</strong> followers
               </button>
               <button
-                onClick={() => router.push(`/messages/${params.id}`)}
-                className="px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                onClick={() => openListModal("following")}
+                className="hover:underline"
               >
-                Message
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-center gap-16 border-t border-gray-200 dark:border-gray-800 pt-3">
-          <button className="flex items-center gap-2 text-sm font-semibold border-t-2 border-black dark:border-white pt-3 -mt-3">
-            <FiGrid size={16} /> POSTS
-          </button>
-          {isOwnProfile && (
-            <button
-              onClick={() => router.push("/saved")}
-              className="flex items-center gap-2 text-sm text-gray-500 pt-3"
-            >
-              <FiBookmark size={16} /> SAVED
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-3 gap-1 mt-4 pb-10">
-          {posts.length === 0 && (
-            <p className="col-span-3 text-center text-gray-500 mt-10">
-              No posts yet.
-            </p>
-          )}
-          {posts.map((post) => (
-            <div
-              key={post._id}
-              onClick={() => goToPost(post._id)}
-              className="aspect-square bg-gray-200 dark:bg-gray-900 cursor-pointer"
-            >
-              <img
-                src={post.image}
-                alt="Post"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Edit Profile Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm p-6 relative max-h-[85vh] overflow-y-auto">
-            <button
-              onClick={() => setShowEditModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white"
-            >
-              <FiX size={22} />
-            </button>
-
-            <h2 className="text-lg font-semibold mb-5">Edit Profile</h2>
-
-            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Name</label>
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Your name"
-            />
-
-            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Username</label>
-            <input
-              type="text"
-              value={editUsername}
-              onChange={(e) => setEditUsername(e.target.value)}
-              className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="username"
-            />
-            <p className="text-xs text-gray-500 mb-4">
-              Lowercase letters, numbers, underscore only. No email or spaces.
-            </p>
-
-            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Email</label>
-            <input
-              type="text"
-              value={profile?.email || ""}
-              disabled
-              className="w-full bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-sm rounded-lg px-3 py-2 mb-1 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mb-4">
-              Email can&apos;t be changed here. This is shown so you always know which email is linked to your account (useful for password reset).
-            </p>
-
-            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Bio</label>
-            <textarea
-              value={editBio}
-              onChange={(e) => setEditBio(e.target.value)}
-              rows={3}
-              className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-              placeholder="Write something about yourself..."
-            />
-
-            {editError && (
-              <p className="text-red-500 dark:text-red-400 text-sm mb-4">{editError}</p>
-            )}
-
-            <button
-              onClick={handleSaveProfile}
-              disabled={saving}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
-            >
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Followers/Following List Modal */}
-      {listModalType && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm max-h-[70vh] flex flex-col relative">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-              <h2 className="text-base font-semibold capitalize">
-                {listModalType}
-              </h2>
-              <button
-                onClick={() => setListModalType(null)}
-                className="text-gray-400 hover:text-gray-700 dark:hover:text-white"
-              >
-                <FiX size={20} />
+                <strong>{profile?.followingCount || 0}</strong> following
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1">
-              {listLoading ? (
-                <p className="text-center text-gray-500 py-8 text-sm">
-                  Loading...
-                </p>
-              ) : listUsers.length === 0 ? (
-                <p className="text-center text-gray-500 py-8 text-sm">
-                  No {listModalType} yet.
-                </p>
-              ) : (
-                listUsers.map((u) => (
-                  <button
-                    key={u._id}
-                    onClick={() => goToUserProfile(u._id)}
-                    className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
-                      {u.avatar ? (
-                        <img
-                          src={u.avatar}
-                          alt={u.username}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        u.username?.[0]?.toUpperCase()
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{u.username}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{u.name}</p>
-                    </div>
-                  </button>
-                ))
+            <div className="text-left mb-4">
+              <p className="font-semibold text-sm">{profile?.name}</p>
+              {profile?.bio && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">{profile.bio}</p>
               )}
             </div>
+
+            {isOwnProfile ? (
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={openEditModal}
+                  className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                >
+                  Edit Profile
+                </button>
+                <button
+                  onClick={handleAvatarClick}
+                  disabled={uploadingAvatar}
+                  className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex-1"
+                >
+                  {uploadingAvatar ? "..." : "Change Photo"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={handleFollow}
+                  className={`px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 ${
+                    profile?.isFollowing
+                      ? "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                      : "bg-blue-500 hover:bg-blue-600 text-white"
+                  }`}
+                >
+                  {profile?.isFollowing ? "Following" : "Follow"}
+                </button>
+                <button
+                  onClick={() => router.push(`/messages/${params.id}`)}
+                  className="px-6 py-1.5 rounded-lg text-sm font-semibold flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700"
+                >
+                  Message
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-center gap-16 border-t border-gray-200 dark:border-gray-800 pt-3">
+            <button className="flex items-center gap-2 text-sm font-semibold border-t-2 border-black dark:border-white pt-3 -mt-3">
+              <FiGrid size={16} /> POSTS
+            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => router.push("/saved")}
+                className="flex items-center gap-2 text-sm text-gray-500 pt-3"
+              >
+                <FiBookmark size={16} /> SAVED
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-1 mt-4 pb-10">
+            {posts.length === 0 && (
+              <p className="col-span-3 text-center text-gray-500 mt-10">
+                No posts yet.
+              </p>
+            )}
+            {posts.map((post) => (
+              <div
+                key={post._id}
+                onClick={() => goToPost(post._id)}
+                className="aspect-square bg-gray-200 dark:bg-gray-900 cursor-pointer"
+              >
+                <img
+                  src={post.image}
+                  alt="Post"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Avatar Preview Confirmation Modal */}
-      {avatarPreview && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm p-6 text-center">
-            <h2 className="text-lg font-semibold mb-4">Update Profile Photo?</h2>
-
-            <img
-              src={avatarPreview}
-              alt="Preview"
-              className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
-            />
-
-            <div className="flex gap-3">
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm p-6 relative max-h-[85vh] overflow-y-auto">
               <button
-                onClick={cancelAvatarUpload}
-                disabled={uploadingAvatar}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 disabled:opacity-50 font-semibold py-2 rounded-lg text-sm"
+                onClick={() => setShowEditModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-white"
               >
-                No
+                <FiX size={22} />
               </button>
+
+              <h2 className="text-lg font-semibold mb-5">Edit Profile</h2>
+
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Name</label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Your name"
+              />
+
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Username</label>
+              <input
+                type="text"
+                value={editUsername}
+                onChange={(e) => setEditUsername(e.target.value)}
+                className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="username"
+              />
+              <p className="text-xs text-gray-500 mb-4">
+                Lowercase letters, numbers, underscore only. No email or spaces.
+              </p>
+
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Email</label>
+              <input
+                type="text"
+                value={profile?.email || ""}
+                disabled
+                className="w-full bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-sm rounded-lg px-3 py-2 mb-1 cursor-not-allowed"
+              />
+              <p className="text-xs text-gray-500 mb-4">
+                Email can&apos;t be changed here.
+              </p>
+
+              <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">Bio</label>
+              <textarea
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                rows={3}
+                className="w-full bg-gray-100 dark:bg-gray-800 text-black dark:text-white text-sm rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                placeholder="Write something about yourself..."
+              />
+
+              {editError && (
+                <p className="text-red-500 dark:text-red-400 text-sm mb-4">{editError}</p>
+              )}
+
               <button
-                onClick={confirmAvatarUpload}
-                disabled={uploadingAvatar}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
               >
-                {uploadingAvatar ? "Saving..." : "Yes, Save"}
+                {saving ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Photo Options Modal */}
-      {showPhotoOptions && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-sm overflow-hidden">
-            <button
-              onClick={handleChooseNewPhoto}
-              className="w-full text-center py-4 text-sm font-semibold text-blue-500 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-800"
-            >
-              Upload New Photo
-            </button>
-            {profile?.avatar && (
-              <button
-                onClick={handleRemovePhoto}
-                className="w-full text-center py-4 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-800"
-              >
-                Remove Current Photo
-              </button>
-            )}
-            <button
-              onClick={() => setShowPhotoOptions(false)}
-              className="w-full text-center py-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Cancel
-            </button>
+        {listModalType && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm max-h-[70vh] flex flex-col relative">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+                <h2 className="text-base font-semibold capitalize">
+                  {listModalType}
+                </h2>
+                <button
+                  onClick={() => setListModalType(null)}
+                  className="text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto flex-1">
+                {listLoading ? (
+                  <p className="text-center text-gray-500 py-8 text-sm">
+                    Loading...
+                  </p>
+                ) : listUsers.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8 text-sm">
+                    No {listModalType} yet.
+                  </p>
+                ) : (
+                  listUsers.map((u) => (
+                    <button
+                      key={u._id}
+                      onClick={() => goToUserProfile(u._id)}
+                      className="flex items-center gap-3 w-full px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden shrink-0">
+                        {u.avatar ? (
+                          <img
+                            src={u.avatar}
+                            alt={u.username}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          u.username?.[0]?.toUpperCase()
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{u.username}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{u.name}</p>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {avatarPreview && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-xl w-full max-w-sm p-6 text-center">
+              <h2 className="text-lg font-semibold mb-4">Update Profile Photo?</h2>
+
+              <img
+                src={avatarPreview}
+                alt="Preview"
+                className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+              />
+
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelAvatarUpload}
+                  disabled={uploadingAvatar}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 disabled:opacity-50 font-semibold py-2 rounded-lg text-sm"
+                >
+                  No
+                </button>
+                <button
+                  onClick={confirmAvatarUpload}
+                  disabled={uploadingAvatar}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold py-2 rounded-lg text-sm"
+                >
+                  {uploadingAvatar ? "Saving..." : "Yes, Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showPhotoOptions && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-sm overflow-hidden">
+              <button
+                onClick={handleChooseNewPhoto}
+                className="w-full text-center py-4 text-sm font-semibold text-blue-500 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-800"
+              >
+                Upload New Photo
+              </button>
+              {profile?.avatar && (
+                <button
+                  onClick={handleRemovePhoto}
+                  className="w-full text-center py-4 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-800"
+                >
+                  Remove Current Photo
+                </button>
+              )}
+              <button
+                onClick={() => setShowPhotoOptions(false)}
+                className="w-full text-center py-4 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
