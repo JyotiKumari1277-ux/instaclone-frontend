@@ -32,6 +32,7 @@ export default function Home() {
   const [showViewersModal, setShowViewersModal] = useState(false);
   const [viewersData, setViewersData] = useState<any>(null);
   const [loadingViewers, setLoadingViewers] = useState(false);
+  const [addingToStory, setAddingToStory] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -261,6 +262,19 @@ export default function Home() {
       console.error(err);
     }
   };
+  const handleAddToStory = async (postId: string) => {
+    setAddingToStory(postId);
+    try {
+      await api.post(`/stories/from-post/${postId}`);
+      fetchStories();
+      alert("Added to your story!");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while adding to story.");
+    } finally {
+      setAddingToStory(null);
+    }
+  };
 
   const toggleComments = (postId: string) => {
     setOpenComments({ ...openComments, [postId]: !openComments[postId] });
@@ -437,7 +451,15 @@ export default function Home() {
                   <button onClick={() => setSharingPostId(post._id)}>
                     <FiSend size={18} />
                   </button>
-
+<button
+                    onClick={() => handleAddToStory(post._id)}
+                    disabled={addingToStory === post._id}
+                    title="Add to your story"
+                    className="disabled:opacity-50"
+                  >
+                    <FiPlus size={18} />
+                  </button>
+                  
                   <button
                     onClick={() => handleSave(post._id)}
                     className={`text-sm font-semibold ml-auto ${
