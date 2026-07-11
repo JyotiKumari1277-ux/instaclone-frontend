@@ -76,7 +76,7 @@ export default function Home() {
 
   const fetchSuggestedUsers = async () => {
     try {
-      const res = await api.get("/users/suggestions/list");
+      const res = await api.get("/users/suggested");
       setSuggestedUsers(res.data);
     } catch (err) {
       console.error(err);
@@ -523,7 +523,8 @@ export default function Home() {
                   <button onClick={() => setSharingPostId(post._id)}>
                     <FiSend size={18} />
                   </button>
-<button
+
+                  <button
                     onClick={() => handleAddToStory(post._id)}
                     disabled={addingToStory === post._id}
                     title="Add to your story"
@@ -531,7 +532,7 @@ export default function Home() {
                   >
                     <FiPlus size={18} />
                   </button>
-                  
+
                   <button
                     onClick={() => handleSave(post._id)}
                     className={`text-sm font-semibold ml-auto ${
