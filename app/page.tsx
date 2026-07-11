@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import ShareModal from "@/components/ShareModal";
-import { FiMessageCircle, FiX, FiSend } from "react-icons/fi";
+import { FiMessageCircle, FiX, FiSend, FiPlus } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +17,13 @@ export default function Home() {
   const [openComments, setOpenComments] = useState<{ [key: string]: boolean }>({});
   const [submittingComment, setSubmittingComment] = useState<{ [key: string]: boolean }>({});
   const [sharingPostId, setSharingPostId] = useState<string | null>(null);
+
+  // Stories state
+  const [storyGroups, setStoryGroups] = useState<any[]>([]);
+  const [uploadingStory, setUploadingStory] = useState(false);
+  const storyInputRef = useRef<HTMLInputElement>(null);
+  const [viewerGroupIndex, setViewerGroupIndex] = useState<number | null>(null);
+  const [viewerStoryIndex, setViewerStoryIndex] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,6 +37,7 @@ export default function Home() {
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
     fetchPosts();
+    fetchStories();
   }, [router]);
 
   const fetchPosts = async () => {
@@ -40,6 +48,85 @@ export default function Home() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStories = async () => {
+    try {
+      const res = await api.get("/stories");
+      setStoryGroups(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleStoryUploadClick = () => {
+    storyInputRef.current?.click();
+  };
+
+  const handleStoryFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingStory(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      await api.post("/stories", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      fetchStories();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while uploading your story.");
+    } finally {
+      setUploadingStory(false);
+      if (storyInputRef.current) storyInputRef.current.value = "";
+    }
+  };
+
+  const openStoryViewer = (groupIndex: number) => {
+    setViewerGroupIndex(groupIndex);
+    setViewerStoryIndex(0);
+
+    const story = storyGroups[groupIndex]?.stories?.[0];
+    if (story) {
+      api.put(`/stories/${story._id}/view`).catch(() => {});
+    }
+  };
+
+  const closeStoryViewer = () => {
+    setViewerGroupIndex(null);
+    setViewerStoryIndex(0);
+  };
+
+  const goToNextStory = () => {
+    if (viewerGroupIndex === null) return;
+    const currentGroup = storyGroups[viewerGroupIndex];
+
+    if (viewerStoryIndex < currentGroup.stories.length - 1) {
+      const nextIndex = viewerStoryIndex + 1;
+      setViewerStoryIndex(nextIndex);
+      const nextStory = currentGroup.stories[nextIndex];
+      api.put(`/stories/${nextStory._id}/view`).catch(() => {});
+    } else if (viewerGroupIndex < storyGroups.length - 1) {
+      openStoryViewer(viewerGroupIndex + 1);
+    } else {
+      closeStoryViewer();
+    }
+  };
+
+  const goToPrevStory = () => {
+    if (viewerGroupIndex === null) return;
+
+    if (viewerStoryIndex > 0) {
+      setViewerStoryIndex(viewerStoryIndex - 1);
+    } else if (viewerGroupIndex > 0) {
+      const prevGroup = storyGroups[viewerGroupIndex - 1];
+      setViewerGroupIndex(viewerGroupIndex - 1);
+      setViewerStoryIndex(prevGroup.stories.length - 1);
     }
   };
 
@@ -100,12 +187,105 @@ export default function Home() {
     );
   }
 
+  const myStoryGroup = storyGroups.find((g) => g.user._id === user?.id);
+  const otherStoryGroups = storyGroups.filter((g) => g.user._id !== user?.id);
+  const orderedGroups = myStoryGroup
+    ? [myStoryGroup, ...otherStoryGroups]
+    : otherStoryGroups;
+
+  const activeGroup =
+    viewerGroupIndex !== null ? orderedGroups[viewerGroupIndex] : null;
+  const activeStory = activeGroup?.stories?.[viewerStoryIndex];
+
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
       <Sidebar />
 
       {/* Main Feed */}
       <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-xl mx-auto px-4">
+        {/* Stories row */}
+        <div className="flex gap-4 overflow-x-auto pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
+          {/* Your story */}
+          <div className="flex flex-col items-center gap-1 flex-shrink-0">
+            <div
+              onClick={() =>
+                myStoryGroup ? openStoryViewer(0) : handleStoryUploadClick()
+              }
+              className={`relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer overflow-hidden ${
+                myStoryGroup
+                  ? "ring-2 ring-pink-500"
+                  : "bg-gray-200 dark:bg-gray-800"
+              }`}
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="You"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-lg font-bold">
+                  {user?.username?.[0]?.toUpperCase()}
+                </span>
+              )}
+
+              {!myStoryGroup && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleStoryUploadClick();
+                  }}
+                  className="absolute bottom-0 right-0 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-black"
+                >
+                  <FiPlus size={12} className="text-white" />
+                </div>
+              )}
+
+              {uploadingStory && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span className="text-white text-xs">...</span>
+                </div>
+              )}
+            </div>
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              Your Story
+            </span>
+            <input
+              ref={storyInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleStoryFileChange}
+              className="hidden"
+            />
+          </div>
+
+          {/* Other users' stories */}
+          {otherStoryGroups.map((group, idx) => (
+            <div
+              key={group.user._id}
+              className="flex flex-col items-center gap-1 flex-shrink-0"
+              onClick={() => openStoryViewer(myStoryGroup ? idx + 1 : idx)}
+            >
+              <div className="w-16 h-16 rounded-full ring-2 ring-pink-500 flex items-center justify-center cursor-pointer overflow-hidden">
+                {group.user.avatar ? (
+                  <img
+                    src={group.user.avatar}
+                    alt={group.user.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-lg font-bold bg-gray-200 dark:bg-gray-800 w-full h-full flex items-center justify-center">
+                    {group.user.username?.[0]?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-gray-600 dark:text-gray-400 truncate w-16 text-center">
+                {group.user.username}
+              </span>
+            </div>
+          ))}
+        </div>
+
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           Welcome, {user?.name}! (@{user?.username})
         </p>
@@ -268,6 +448,63 @@ export default function Home() {
           postId={sharingPostId}
           onClose={() => setSharingPostId(null)}
         />
+      )}
+
+      {/* Story Viewer */}
+      {activeGroup && activeStory && (
+        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+          <button
+            onClick={closeStoryViewer}
+            className="absolute top-4 right-4 text-white z-10"
+          >
+            <FiX size={28} />
+          </button>
+
+          {/* Progress bars */}
+          <div className="absolute top-3 left-3 right-3 flex gap-1 z-10">
+            {activeGroup.stories.map((_: any, i: number) => (
+              <div
+                key={i}
+                className="h-0.5 flex-1 bg-gray-500 rounded overflow-hidden"
+              >
+                <div
+                  className={`h-full bg-white ${
+                    i < viewerStoryIndex ? "w-full" : i === viewerStoryIndex ? "w-full" : "w-0"
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* User info */}
+          <div className="absolute top-8 left-3 flex items-center gap-2 z-10">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-xs font-bold text-white">
+              {activeGroup.user.avatar ? (
+                <img
+                  src={activeGroup.user.avatar}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                activeGroup.user.username?.[0]?.toUpperCase()
+              )}
+            </div>
+            <span className="text-white text-sm font-semibold">
+              {activeGroup.user.username}
+            </span>
+          </div>
+
+          {/* Tap zones for navigation */}
+          <div className="absolute inset-0 flex">
+            <div className="w-1/2 h-full" onClick={goToPrevStory} />
+            <div className="w-1/2 h-full" onClick={goToNextStory} />
+          </div>
+
+          <img
+            src={activeStory.image}
+            alt="Story"
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
       )}
     </div>
   );
