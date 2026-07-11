@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { FiGrid, FiBookmark, FiX, FiCamera, FiLogOut } from "react-icons/fi";
+import Sidebar from "@/components/Sidebar";
 
 export default function Profile() {
   const params = useParams();
