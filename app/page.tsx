@@ -38,6 +38,7 @@ export default function Home() {
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [followingIds, setFollowingIds] = useState<{ [key: string]: boolean }>({});
   const [dismissedIds, setDismissedIds] = useState<{ [key: string]: boolean }>({});
+  const [followingCount, setFollowingCount] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,6 +54,7 @@ export default function Home() {
     fetchPosts();
     fetchStories();
     fetchSuggestedUsers();
+    fetchFollowingCount(parsedUser.id);
   }, [router]);
 
   const fetchPosts = async () => {
@@ -84,10 +86,20 @@ export default function Home() {
     }
   };
 
+  const fetchFollowingCount = async (userId: string) => {
+    try {
+      const res = await api.get(`/users/${userId}`);
+      setFollowingCount(res.data.user.followingCount || 0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleFollowSuggestion = async (userId: string) => {
     try {
       await api.put(`/users/${userId}/follow`);
       setFollowingIds({ ...followingIds, [userId]: true });
+      setFollowingCount((prev) => (prev !== null ? prev + 1 : 1));
     } catch (err) {
       console.error(err);
     }
@@ -336,311 +348,353 @@ export default function Home() {
   const isStoryLiked = activeStory?.likes?.includes(user?.id);
 
   const visibleSuggestedUsers = suggestedUsers.filter((s) => !dismissedIds[s._id]);
+  const showInlineSuggestions = followingCount === 0 && visibleSuggestedUsers.length > 0;
+  const showSidebarSuggestions = (followingCount ?? 0) > 0 && visibleSuggestedUsers.length > 0;
+
+  const SuggestionCard = ({ s, compact }: { s: any; compact?: boolean }) => (
+    <div
+      className={
+        compact
+          ? "relative flex items-center gap-2 w-full"
+          : "relative flex flex-col items-center gap-2 flex-shrink-0 w-24 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
+      }
+    >
+      <button
+        onClick={() => handleDismissSuggestion(s._id)}
+        className={
+          compact
+            ? "absolute top-0 right-0 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+            : "absolute top-1 right-1 text-gray-400 hover:text-gray-700 dark:hover:text-white"
+        }
+        title="Remove suggestion"
+      >
+        <FiX size={14} />
+      </button>
+
+      <div
+        onClick={() => router.push(`/profile/${s._id}`)}
+        className={
+          compact
+            ? "w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden cursor-pointer flex-shrink-0"
+            : "w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden cursor-pointer"
+        }
+      >
+        {s.avatar ? (
+          <img src={s.avatar} alt={s.username} className="w-full h-full object-cover" />
+        ) : (
+          s.username?.[0]?.toUpperCase()
+        )}
+      </div>
+
+      {compact ? (
+        <div className="flex-1 min-w-0 pr-4">
+          <p className="text-xs font-semibold truncate">{s.username}</p>
+          <p className="text-[11px] text-gray-500 truncate">Suggested for you</p>
+        </div>
+      ) : (
+        <p className="text-xs font-semibold truncate w-full text-center">{s.username}</p>
+      )}
+
+      <button
+        onClick={() => handleFollowSuggestion(s._id)}
+        disabled={followingIds[s._id]}
+        className={`text-xs font-semibold px-3 py-1 rounded ${compact ? "" : "w-full"} ${
+          followingIds[s._id]
+            ? "bg-gray-200 dark:bg-gray-800 text-gray-500"
+            : "bg-blue-500 hover:bg-blue-600 text-white"
+        }`}
+      >
+        {followingIds[s._id] ? "Following" : "Follow"}
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
       <Sidebar />
 
-      {/* Main Feed */}
-      <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-xl mx-auto px-4">
-        {/* Stories row */}
-        <div className="flex gap-4 overflow-x-auto pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
-          {/* Your story */}
-          <div className="flex flex-col items-center gap-1 flex-shrink-0">
-            <div
-              onClick={() =>
-                myStoryGroup ? openStoryViewer(0) : handleStoryUploadClick()
-              }
-              className={`relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer overflow-hidden ${
-                myStoryGroup
-                  ? "ring-2 ring-pink-500"
-                  : "bg-gray-200 dark:bg-gray-800"
-              }`}
-            >
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="You"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-lg font-bold">
-                  {user?.username?.[0]?.toUpperCase()}
-                </span>
-              )}
-
-              {!myStoryGroup && (
-                <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStoryUploadClick();
-                  }}
-                  className="absolute bottom-0 right-0 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-black"
-                >
-                  <FiPlus size={12} className="text-white" />
-                </div>
-              )}
-
-              {uploadingStory && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-xs">...</span>
-                </div>
-              )}
-            </div>
-            <span className="text-xs text-gray-600 dark:text-gray-400">
-              Your Story
-            </span>
-            <input
-              ref={storyInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleStoryFileChange}
-              className="hidden"
-            />
-          </div>
-
-          {/* Other users' stories */}
-          {otherStoryGroups.map((group, idx) => (
-            <div
-              key={group.user._id}
-              className="flex flex-col items-center gap-1 flex-shrink-0"
-              onClick={() => openStoryViewer(myStoryGroup ? idx + 1 : idx)}
-            >
-              <div className="w-16 h-16 rounded-full ring-2 ring-pink-500 flex items-center justify-center cursor-pointer overflow-hidden">
-                {group.user.avatar ? (
+      <div className="flex-1 md:ml-20 lg:ml-64 flex justify-center gap-8 pt-16 md:pt-6 px-4">
+        {/* Main Feed */}
+        <main className="max-w-xl w-full">
+          {/* Stories row */}
+          <div className="flex gap-4 overflow-x-auto pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
+            {/* Your story */}
+            <div className="flex flex-col items-center gap-1 flex-shrink-0">
+              <div
+                onClick={() =>
+                  myStoryGroup ? openStoryViewer(0) : handleStoryUploadClick()
+                }
+                className={`relative w-16 h-16 rounded-full flex items-center justify-center cursor-pointer overflow-hidden ${
+                  myStoryGroup
+                    ? "ring-2 ring-pink-500"
+                    : "bg-gray-200 dark:bg-gray-800"
+                }`}
+              >
+                {user?.avatar ? (
                   <img
-                    src={group.user.avatar}
-                    alt={group.user.username}
+                    src={user.avatar}
+                    alt="You"
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-lg font-bold bg-gray-200 dark:bg-gray-800 w-full h-full flex items-center justify-center">
-                    {group.user.username?.[0]?.toUpperCase()}
+                  <span className="text-lg font-bold">
+                    {user?.username?.[0]?.toUpperCase()}
                   </span>
                 )}
-              </div>
-              <span className="text-xs text-gray-600 dark:text-gray-400 truncate w-16 text-center">
-                {group.user.username}
-              </span>
-            </div>
-          ))}
-        </div>
 
-        {/* Suggested for you */}
-        {visibleSuggestedUsers.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-500 mb-3">
-              Suggested for you
-            </h3>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {visibleSuggestedUsers.map((s) => (
-                <div
-                  key={s._id}
-                  className="relative flex flex-col items-center gap-2 flex-shrink-0 w-24 border border-gray-200 dark:border-gray-800 rounded-lg p-3"
-                >
-                  <button
-                    onClick={() => handleDismissSuggestion(s._id)}
-                    className="absolute top-1 right-1 text-gray-400 hover:text-gray-700 dark:hover:text-white"
-                    title="Remove suggestion"
-                  >
-                    <FiX size={14} />
-                  </button>
-
+                {!myStoryGroup && (
                   <div
-                    onClick={() => router.push(`/profile/${s._id}`)}
-                    className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold overflow-hidden cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStoryUploadClick();
+                    }}
+                    className="absolute bottom-0 right-0 bg-blue-500 rounded-full w-5 h-5 flex items-center justify-center border-2 border-white dark:border-black"
                   >
-                    {s.avatar ? (
-                      <img src={s.avatar} alt={s.username} className="w-full h-full object-cover" />
-                    ) : (
-                      s.username?.[0]?.toUpperCase()
-                    )}
+                    <FiPlus size={12} className="text-white" />
                   </div>
-                  <p className="text-xs font-semibold truncate w-full text-center">
-                    {s.username}
-                  </p>
-                  <button
-                    onClick={() => handleFollowSuggestion(s._id)}
-                    disabled={followingIds[s._id]}
-                    className={`text-xs font-semibold px-3 py-1 rounded w-full ${
-                      followingIds[s._id]
-                        ? "bg-gray-200 dark:bg-gray-800 text-gray-500"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
-                    }`}
-                  >
-                    {followingIds[s._id] ? "Following" : "Follow"}
-                  </button>
+                )}
+
+                {uploadingStory && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <span className="text-white text-xs">...</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Your Story
+              </span>
+              <input
+                ref={storyInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleStoryFileChange}
+                className="hidden"
+              />
+            </div>
+
+            {/* Other users' stories */}
+            {otherStoryGroups.map((group, idx) => (
+              <div
+                key={group.user._id}
+                className="flex flex-col items-center gap-1 flex-shrink-0"
+                onClick={() => openStoryViewer(myStoryGroup ? idx + 1 : idx)}
+              >
+                <div className="w-16 h-16 rounded-full ring-2 ring-pink-500 flex items-center justify-center cursor-pointer overflow-hidden">
+                  {group.user.avatar ? (
+                    <img
+                      src={group.user.avatar}
+                      alt={group.user.username}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-lg font-bold bg-gray-200 dark:bg-gray-800 w-full h-full flex items-center justify-center">
+                      {group.user.username?.[0]?.toUpperCase()}
+                    </span>
+                  )}
                 </div>
+                <span className="text-xs text-gray-600 dark:text-gray-400 truncate w-16 text-center">
+                  {group.user.username}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Suggested for you - inline (only when following 0 people) */}
+          {showInlineSuggestions && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-500 mb-3">
+                Suggested for you
+              </h3>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {visibleSuggestedUsers.map((s) => (
+                  <SuggestionCard key={s._id} s={s} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Welcome, {user?.name}! (@{user?.username})
+          </p>
+
+          {posts.length === 0 && (
+            <p className="text-gray-500 text-center mt-10">
+              No posts yet. Be the first to share something!
+            </p>
+          )}
+
+          {posts.map((post) => {
+            const isLiked = post.likes?.includes(user?.id);
+            const isCommentsOpen = openComments[post._id];
+            const isSubmitting = submittingComment[post._id];
+
+            return (
+              <div
+                key={post._id}
+                className="border border-gray-200 dark:border-gray-800 rounded-lg mb-6 overflow-hidden"
+              >
+                <div className="flex items-center gap-2 p-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
+                    {post.user?.username?.[0]?.toUpperCase()}
+                  </div>
+                  <p
+                    className="text-sm font-semibold cursor-pointer hover:underline"
+                    onClick={() => router.push(`/profile/${post.user?._id}`)}
+                  >
+                    {post.user?.username}
+                  </p>
+                </div>
+
+                <img
+                  src={post.image}
+                  alt="Post"
+                  className="w-full max-h-[500px] object-cover"
+                />
+
+                <div className="p-3">
+                  <div className="flex items-center gap-4 mb-2">
+                    <button
+                      onClick={() => handleLike(post._id)}
+                      className={`text-sm font-semibold ${
+                        isLiked ? "text-red-500" : "text-black dark:text-white"
+                      }`}
+                    >
+                      {isLiked ? "♥ Liked" : "♡ Like"}
+                    </button>
+
+                    <button
+                      onClick={() => toggleComments(post._id)}
+                      className="flex items-center gap-1"
+                    >
+                      <FiMessageCircle size={18} />
+                      <span className="text-sm">
+                        {post.comments?.length || 0}
+                      </span>
+                    </button>
+
+                    <button onClick={() => setSharingPostId(post._id)}>
+                      <FiSend size={18} />
+                    </button>
+
+                    <button
+                      onClick={() => handleAddToStory(post._id)}
+                      disabled={addingToStory === post._id}
+                      title="Add to your story"
+                      className="disabled:opacity-50"
+                    >
+                      <FiPlus size={18} />
+                    </button>
+
+                    <button
+                      onClick={() => handleSave(post._id)}
+                      className={`text-sm font-semibold ml-auto ${
+                        savedPosts[post._id] ? "text-yellow-500" : "text-black dark:text-white"
+                      }`}
+                    >
+                      {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
+                    </button>
+                  </div>
+
+                  <span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">
+                    {post.likes?.length || 0} likes
+                  </span>
+
+                  {post.caption && (
+                    <p className="text-sm mt-1">
+                      <span className="font-semibold">{post.user?.username}</span>{" "}
+                      {post.caption}
+                    </p>
+                  )}
+
+                  {!isCommentsOpen && post.comments?.length > 0 && (
+                    <button
+                      onClick={() => toggleComments(post._id)}
+                      className="text-gray-500 text-sm mt-2"
+                    >
+                      View all {post.comments.length} comments
+                    </button>
+                  )}
+
+                  {isCommentsOpen && (
+                    <>
+                      <div className="mt-2">
+                        {post.comments?.map((c: any) => {
+                          const isOwnComment = c.user?._id === user?.id;
+                          return (
+                            <div
+                              key={c._id}
+                              className="flex justify-between items-start group"
+                            >
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                <span className="font-semibold">
+                                  {c.user?.username}
+                                </span>{" "}
+                                {c.text}
+                              </p>
+                              {isOwnComment && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteComment(post._id, c._id)
+                                  }
+                                  className="text-gray-500 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Delete comment"
+                                >
+                                  <FiX size={14} />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex gap-2 mt-3">
+                        <input
+                          type="text"
+                          placeholder="Add a comment..."
+                          value={commentText[post._id] || ""}
+                          onChange={(e) =>
+                            setCommentText({
+                              ...commentText,
+                              [post._id]: e.target.value,
+                            })
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleComment(post._id);
+                          }}
+                          className="flex-1 bg-gray-100 dark:bg-gray-900 text-black dark:text-white text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none"
+                        />
+                        <button
+                          onClick={() => handleComment(post._id)}
+                          disabled={isSubmitting}
+                          className="text-blue-500 dark:text-blue-400 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? "..." : "Post"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </main>
+
+        {/* Right sidebar - suggestions (only when following 1+ people) */}
+        {showSidebarSuggestions && (
+          <aside className="hidden lg:block w-72 pt-2">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-500">
+                Suggested for you
+              </h3>
+            </div>
+            <div className="flex flex-col gap-4">
+              {visibleSuggestedUsers.map((s) => (
+                <SuggestionCard key={s._id} s={s} compact />
               ))}
             </div>
-          </div>
+          </aside>
         )}
-
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Welcome, {user?.name}! (@{user?.username})
-        </p>
-
-        {posts.length === 0 && (
-          <p className="text-gray-500 text-center mt-10">
-            No posts yet. Be the first to share something!
-          </p>
-        )}
-
-        {posts.map((post) => {
-          const isLiked = post.likes?.includes(user?.id);
-          const isCommentsOpen = openComments[post._id];
-          const isSubmitting = submittingComment[post._id];
-
-          return (
-            <div
-              key={post._id}
-              className="border border-gray-200 dark:border-gray-800 rounded-lg mb-6 overflow-hidden"
-            >
-              <div className="flex items-center gap-2 p-3">
-                <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-xs font-bold">
-                  {post.user?.username?.[0]?.toUpperCase()}
-                </div>
-                <p
-                  className="text-sm font-semibold cursor-pointer hover:underline"
-                  onClick={() => router.push(`/profile/${post.user?._id}`)}
-                >
-                  {post.user?.username}
-                </p>
-              </div>
-
-              <img
-                src={post.image}
-                alt="Post"
-                className="w-full max-h-[500px] object-cover"
-              />
-
-              <div className="p-3">
-                <div className="flex items-center gap-4 mb-2">
-                  <button
-                    onClick={() => handleLike(post._id)}
-                    className={`text-sm font-semibold ${
-                      isLiked ? "text-red-500" : "text-black dark:text-white"
-                    }`}
-                  >
-                    {isLiked ? "♥ Liked" : "♡ Like"}
-                  </button>
-
-                  <button
-                    onClick={() => toggleComments(post._id)}
-                    className="flex items-center gap-1"
-                  >
-                    <FiMessageCircle size={18} />
-                    <span className="text-sm">
-                      {post.comments?.length || 0}
-                    </span>
-                  </button>
-
-                  <button onClick={() => setSharingPostId(post._id)}>
-                    <FiSend size={18} />
-                  </button>
-
-                  <button
-                    onClick={() => handleAddToStory(post._id)}
-                    disabled={addingToStory === post._id}
-                    title="Add to your story"
-                    className="disabled:opacity-50"
-                  >
-                    <FiPlus size={18} />
-                  </button>
-
-                  <button
-                    onClick={() => handleSave(post._id)}
-                    className={`text-sm font-semibold ml-auto ${
-                      savedPosts[post._id] ? "text-yellow-500" : "text-black dark:text-white"
-                    }`}
-                  >
-                    {savedPosts[post._id] ? "🔖 Saved" : "🔖 Save"}
-                  </button>
-                </div>
-
-                <span className="text-sm text-gray-600 dark:text-gray-400 block mb-1">
-                  {post.likes?.length || 0} likes
-                </span>
-
-                {post.caption && (
-                  <p className="text-sm mt-1">
-                    <span className="font-semibold">{post.user?.username}</span>{" "}
-                    {post.caption}
-                  </p>
-                )}
-
-                {!isCommentsOpen && post.comments?.length > 0 && (
-                  <button
-                    onClick={() => toggleComments(post._id)}
-                    className="text-gray-500 text-sm mt-2"
-                  >
-                    View all {post.comments.length} comments
-                  </button>
-                )}
-
-                {isCommentsOpen && (
-                  <>
-                    <div className="mt-2">
-                      {post.comments?.map((c: any) => {
-                        const isOwnComment = c.user?._id === user?.id;
-                        return (
-                          <div
-                            key={c._id}
-                            className="flex justify-between items-start group"
-                          >
-                            <p className="text-sm text-gray-700 dark:text-gray-300">
-                              <span className="font-semibold">
-                                {c.user?.username}
-                              </span>{" "}
-                              {c.text}
-                            </p>
-                            {isOwnComment && (
-                              <button
-                                onClick={() =>
-                                  handleDeleteComment(post._id, c._id)
-                                }
-                                className="text-gray-500 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Delete comment"
-                              >
-                                <FiX size={14} />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text"
-                        placeholder="Add a comment..."
-                        value={commentText[post._id] || ""}
-                        onChange={(e) =>
-                          setCommentText({
-                            ...commentText,
-                            [post._id]: e.target.value,
-                          })
-                        }
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleComment(post._id);
-                        }}
-                        className="flex-1 bg-gray-100 dark:bg-gray-900 text-black dark:text-white text-sm border border-gray-300 dark:border-gray-700 rounded px-2 py-1 focus:outline-none"
-                      />
-                      <button
-                        onClick={() => handleComment(post._id)}
-                        disabled={isSubmitting}
-                        className="text-blue-500 dark:text-blue-400 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {isSubmitting ? "..." : "Post"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </main>
+      </div>
 
       {sharingPostId && (
         <ShareModal
