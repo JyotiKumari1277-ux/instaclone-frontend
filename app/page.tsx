@@ -25,6 +25,8 @@ export default function Home() {
   const [viewerGroupIndex, setViewerGroupIndex] = useState<number | null>(null);
   const [viewerStoryIndex, setViewerStoryIndex] = useState(0);
   const [deletingStory, setDeletingStory] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -91,6 +93,7 @@ export default function Home() {
   const openStoryViewer = (groupIndex: number) => {
     setViewerGroupIndex(groupIndex);
     setViewerStoryIndex(0);
+    setReplyText("");
 
     const story = storyGroups[groupIndex]?.stories?.[0];
     if (story) {
@@ -101,10 +104,12 @@ export default function Home() {
   const closeStoryViewer = () => {
     setViewerGroupIndex(null);
     setViewerStoryIndex(0);
+    setReplyText("");
   };
 
   const goToNextStory = () => {
     if (viewerGroupIndex === null) return;
+    setReplyText("");
     const currentGroup = storyGroups[viewerGroupIndex];
 
     if (viewerStoryIndex < currentGroup.stories.length - 1) {
@@ -121,6 +126,7 @@ export default function Home() {
 
   const goToPrevStory = () => {
     if (viewerGroupIndex === null) return;
+    setReplyText("");
 
     if (viewerStoryIndex > 0) {
       setViewerStoryIndex(viewerStoryIndex - 1);
@@ -167,6 +173,25 @@ export default function Home() {
       alert("Something went wrong while deleting the story.");
     } finally {
       setDeletingStory(false);
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !activeStory || !activeGroup) return;
+    if (sendingReply) return;
+
+    setSendingReply(true);
+    try {
+      await api.post(`/messages/${activeGroup.user._id}`, {
+        text: replyText,
+        storyId: activeStory._id,
+      });
+      setReplyText("");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while sending your reply.");
+    } finally {
+      setSendingReply(false);
     }
   };
 
@@ -547,13 +572,37 @@ export default function Home() {
             className="max-h-full max-w-full object-contain"
           />
 
-          {/* Like + Delete bar */}
-          <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 z-20">
+          {/* Reply + Like + Delete bar */}
+          <div
+            className="absolute bottom-6 left-0 right-0 flex items-center gap-3 px-4 z-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {!isOwnStory && (
+              <div className="flex-1 flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder={`Reply to ${activeGroup.user.username}...`}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSendReply();
+                  }}
+                  className="flex-1 bg-transparent border border-white/60 text-white placeholder-white/70 text-sm rounded-full px-4 py-2 focus:outline-none"
+                />
+                {replyText.trim() && (
+                  <button
+                    onClick={handleSendReply}
+                    disabled={sendingReply}
+                    className="text-white disabled:opacity-50"
+                  >
+                    <FiSend size={22} />
+                  </button>
+                )}
+              </div>
+            )}
+
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLikeStory(activeStory._id);
-              }}
+              onClick={() => handleLikeStory(activeStory._id)}
               className="flex items-center gap-1 text-white"
             >
               <FiHeart
@@ -567,10 +616,7 @@ export default function Home() {
 
             {isOwnStory && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteStory(activeStory._id);
-                }}
+                onClick={() => handleDeleteStory(activeStory._id)}
                 disabled={deletingStory}
                 className="text-white disabled:opacity-50"
               >
