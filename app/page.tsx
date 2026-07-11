@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import ShareModal from "@/components/ShareModal";
-import { FiMessageCircle, FiX, FiSend, FiPlus, FiHeart, FiTrash2, FiEye } from "react-icons/fi";
+import { FiMessageCircle, FiX, FiSend, FiPlus, FiHeart, FiTrash2, FiEye, FiChevronUp } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -216,6 +216,13 @@ export default function Home() {
   const closeViewersModal = () => {
     setShowViewersModal(false);
     setViewersData(null);
+  };
+
+  const handleViewPost = () => {
+    if (!activeStory?.sourcePost?._id) return;
+    const postId = activeStory.sourcePost._id;
+    closeStoryViewer();
+    router.push(`/post/${postId}`);
   };
 
   const handleLike = async (postId: string) => {
@@ -629,6 +636,20 @@ export default function Home() {
               <span className="text-sm">
                 Seen by {activeStory.viewers?.length || 0}
               </span>
+            </button>
+          )}
+
+          {/* View Post - only if this story was made from a post */}
+          {activeStory?.sourcePost && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleViewPost();
+              }}
+              className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white z-20"
+            >
+              <FiChevronUp size={18} />
+              <span className="text-xs font-semibold">View Post</span>
             </button>
           )}
 
