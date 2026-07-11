@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import api from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import Sidebar from "@/components/Sidebar";
-import { FiArrowLeft, FiSend } from "react-icons/fi";
+import { FiArrowLeft, FiSend, FiTrash2 } from "react-icons/fi";
 
 export default function ChatWindow() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export default function ChatWindow() {
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState("");
   const [otherUser, setOtherUser] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,8 +41,13 @@ export default function ChatWindow() {
       }
     });
 
+    socket.on("messageDeleted", ({ messageId }: { messageId: string }) => {
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    });
+
     return () => {
       socket.off("newMessage");
+      socket.off("messageDeleted");
     };
   }, [router, otherUserId]);
 
@@ -59,7 +65,6 @@ export default function ChatWindow() {
           first.sender._id === otherUserId ? first.sender : first.receiver;
         setOtherUser(other);
       } else {
-        // No messages yet — still try to get the other user's basic info
         try {
           const userRes = await api.get(`/users/${otherUserId}`);
           setOtherUser(userRes.data.user);
@@ -98,6 +103,22 @@ export default function ChatWindow() {
     }
   };
 
+  const handleUnsend = async (messageId: string) => {
+    const confirmed = window.confirm("Unsend this message?");
+    if (!confirmed) return;
+
+    setDeletingId(messageId);
+    try {
+      await api.delete(`/messages/${messageId}`);
+      setMessages((prev) => prev.filter((m) => m._id !== messageId));
+    } catch (err) {
+      console.error(err);
+      alert("Could not unsend message. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center">
@@ -111,7 +132,6 @@ export default function ChatWindow() {
       <Sidebar />
 
       <div className="flex-1 md:ml-20 lg:ml-64 flex flex-col h-screen pt-16 md:pt-0">
-        {/* Header */}
         <nav className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
           <button onClick={() => router.push("/messages")} className="md:hidden">
             <FiArrowLeft size={20} />
@@ -134,7 +154,6 @@ export default function ChatWindow() {
           </p>
         </nav>
 
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 max-w-2xl mx-auto w-full">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
@@ -157,14 +176,27 @@ export default function ChatWindow() {
                 return (
                   <div
                     key={m._id}
-                    className={`flex ${isMine ? "justify-end" : "justify-start"}`}
+                    className={`flex items-center gap-2 group ${
+                      isMine ? "justify-end" : "justify-start"
+                    }`}
                   >
+                    {isMine && (
+                      <button
+                        onClick={() => handleUnsend(m._id)}
+                        disabled={deletingId === m._id}
+                        title="Unsend"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 disabled:opacity-40 order-1"
+                      >
+                        <FiTrash2 size={15} />
+                      </button>
+                    )}
+
                     <div
                       className={`max-w-[70%] px-3 py-2 rounded-2xl text-sm ${
                         isMine
-                          ? "bg-blue-500 text-white"
+                          ? "bg-blue-500 text-white order-2"
                           : "bg-gray-100 dark:bg-gray-800"
-                      }`}
+                      } ${deletingId === m._id ? "opacity-50" : ""}`}
                     >
                       {m.sharedPost ? (
                         <div>
@@ -187,7 +219,6 @@ export default function ChatWindow() {
           )}
         </div>
 
-        {/* Input */}
         <div className="border-t border-gray-200 dark:border-gray-800 p-3 flex items-center gap-2 max-w-2xl mx-auto w-full flex-shrink-0">
           <input
             type="text"
