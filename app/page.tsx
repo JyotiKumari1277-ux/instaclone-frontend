@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import ShareModal from "@/components/ShareModal";
-import { FiMessageCircle, FiX, FiSend, FiPlus } from "react-icons/fi";
+import { FiMessageCircle, FiX, FiSend, FiPlus, FiHeart, FiTrash2 } from "react-icons/fi";
 
 export default function Home() {
   const router = useRouter();
@@ -24,6 +24,7 @@ export default function Home() {
   const storyInputRef = useRef<HTMLInputElement>(null);
   const [viewerGroupIndex, setViewerGroupIndex] = useState<number | null>(null);
   const [viewerStoryIndex, setViewerStoryIndex] = useState(0);
+  const [deletingStory, setDeletingStory] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -130,6 +131,45 @@ export default function Home() {
     }
   };
 
+  const handleLikeStory = async (storyId: string) => {
+    try {
+      await api.put(`/stories/${storyId}/like`);
+
+      // Update local state immediately so UI feels instant
+      setStoryGroups((prevGroups) =>
+        prevGroups.map((group) => ({
+          ...group,
+          stories: group.stories.map((s: any) => {
+            if (s._id !== storyId) return s;
+            const alreadyLiked = s.likes?.includes(user?.id);
+            const newLikes = alreadyLiked
+              ? s.likes.filter((id: string) => id !== user?.id)
+              : [...(s.likes || []), user?.id];
+            return { ...s, likes: newLikes };
+          }),
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteStory = async (storyId: string) => {
+    if (!confirm("Delete this story?")) return;
+
+    setDeletingStory(true);
+    try {
+      await api.delete(`/stories/${storyId}`);
+      closeStoryViewer();
+      fetchStories();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while deleting the story.");
+    } finally {
+      setDeletingStory(false);
+    }
+  };
+
   const handleLike = async (postId: string) => {
     try {
       await api.put(`/posts/${postId}/like`);
@@ -196,6 +236,8 @@ export default function Home() {
   const activeGroup =
     viewerGroupIndex !== null ? orderedGroups[viewerGroupIndex] : null;
   const activeStory = activeGroup?.stories?.[viewerStoryIndex];
+  const isOwnStory = activeGroup?.user?._id === user?.id;
+  const isStoryLiked = activeStory?.likes?.includes(user?.id);
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
@@ -455,7 +497,7 @@ export default function Home() {
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
           <button
             onClick={closeStoryViewer}
-            className="absolute top-4 right-4 text-white z-10"
+            className="absolute top-4 right-4 text-white z-20"
           >
             <FiX size={28} />
           </button>
@@ -504,6 +546,38 @@ export default function Home() {
             alt="Story"
             className="max-h-full max-w-full object-contain"
           />
+
+          {/* Like + Delete bar */}
+          <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 z-20">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLikeStory(activeStory._id);
+              }}
+              className="flex items-center gap-1 text-white"
+            >
+              <FiHeart
+                size={26}
+                className={isStoryLiked ? "fill-red-500 text-red-500" : "text-white"}
+              />
+              {activeStory.likes?.length > 0 && (
+                <span className="text-sm">{activeStory.likes.length}</span>
+              )}
+            </button>
+
+            {isOwnStory && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteStory(activeStory._id);
+                }}
+                disabled={deletingStory}
+                className="text-white disabled:opacity-50"
+              >
+                <FiTrash2 size={24} />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
