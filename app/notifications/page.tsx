@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import { FiHeart, FiMessageCircle, FiArrowLeft } from "react-icons/fi";
+import Sidebar from "@/components/Sidebar";
+import { FiHeart, FiMessageCircle } from "react-icons/fi";
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -55,18 +56,10 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
-      <nav className="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-        <h1 className="text-lg font-bold">InstaClone</h1>
-        <button
-          onClick={() => router.push("/")}
-          className="text-blue-500 dark:text-blue-400 text-sm flex items-center gap-1"
-        >
-          <FiArrowLeft size={16} /> Back to Feed
-        </button>
-      </nav>
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
+      <Sidebar />
 
-      <div className="max-w-2xl mx-auto px-4 pt-10">
+      <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-2xl mx-auto px-4">
         <h2 className="text-xl font-semibold mb-6">Notifications</h2>
 
         {notifications.length === 0 ? (
@@ -125,7 +118,7 @@ export default function NotificationsPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

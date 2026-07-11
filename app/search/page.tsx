@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import Sidebar from "@/components/Sidebar";
 import { FiSearch } from "react-icons/fi";
 
 export default function SearchPage() {
@@ -44,15 +45,10 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white">
-      <div className="max-w-2xl mx-auto px-4 pt-10">
-        <button
-          onClick={() => router.push("/")}
-          className="text-blue-500 dark:text-blue-400 text-sm mb-6"
-        >
-          ← Back to Feed
-        </button>
+    <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
+      <Sidebar />
 
+      <main className="flex-1 md:ml-20 lg:ml-64 pt-16 md:pt-6 max-w-2xl mx-auto px-4">
         <h1 className="text-xl font-semibold mb-6">Search</h1>
 
         <div className="relative mb-6">
@@ -106,7 +102,7 @@ export default function SearchPage() {
             </div>
           ))}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
