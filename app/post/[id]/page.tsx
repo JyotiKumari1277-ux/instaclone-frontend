@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import api from "@/lib/api";
-import { FiX, FiMessageCircle } from "react-icons/fi";
+import { FiX, FiMessageCircle, FiTrash2 } from "react-icons/fi";
 
 export default function PostDetail() {
   const router = useRouter();
@@ -15,6 +15,7 @@ export default function PostDetail() {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -57,6 +58,20 @@ export default function PostDetail() {
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!confirm("Are you sure you want to delete this post? This cannot be undone.")) return;
+
+    setDeleting(true);
+    try {
+      await api.delete(`/posts/${postId}`);
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while deleting the post.");
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white text-black dark:bg-black dark:text-white">
@@ -80,6 +95,7 @@ export default function PostDetail() {
   }
 
   const isLiked = post.likes?.includes(user?.id);
+  const isOwnPost = post.user?._id === user?.id;
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex items-center justify-center p-4">
@@ -101,6 +117,18 @@ export default function PostDetail() {
           >
             {post.user?.username}
           </p>
+
+          {isOwnPost && (
+            <button
+              onClick={handleDeletePost}
+              disabled={deleting}
+              className="ml-auto text-red-500 hover:text-red-600 disabled:opacity-50 flex items-center gap-1 text-sm font-semibold"
+              title="Delete post"
+            >
+              <FiTrash2 size={16} />
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+          )}
         </div>
 
         <img
