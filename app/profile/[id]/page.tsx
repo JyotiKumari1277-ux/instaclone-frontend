@@ -231,7 +231,7 @@ export default function Profile() {
   };
 
   const goToPost = (postId: string) => {
-    router.push(`/post/${postId}`);
+    router.push(`/post/${postId}?from=${params.id}`);
   };
 
   if (loading) {
