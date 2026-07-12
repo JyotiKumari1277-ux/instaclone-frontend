@@ -61,6 +61,25 @@ export default function Profile() {
     router.push("/login");
   };
 
+  const handleDeleteAccount = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to permanently delete your account? This cannot be undone. All your posts and data will be removed."
+      )
+    )
+      return;
+
+    try {
+      await api.delete("/users/me");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.push("/login");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while deleting your account.");
+    }
+  };
+
   const handleFollow = async () => {
     try {
       const res = await api.put(`/users/${params.id}/follow`);
@@ -467,6 +486,16 @@ export default function Profile() {
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>
+
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <p className="text-xs text-gray-500 mb-2">Danger Zone</p>
+                <button
+                  onClick={handleDeleteAccount}
+                  className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-semibold py-2 rounded-lg text-sm transition-colors"
+                >
+                  Delete Account Permanently
+                </button>
+              </div>
             </div>
           </div>
         )}
