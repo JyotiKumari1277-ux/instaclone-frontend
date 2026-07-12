@@ -198,7 +198,22 @@ export default function ChatWindow() {
                           : "bg-gray-100 dark:bg-gray-800"
                       } ${deletingId === m._id ? "opacity-50" : ""}`}
                     >
-                      {m.sharedPost ? (
+                      {m.sharedStory ? (
+                        <div>
+                          <div
+                            className={`text-xs mb-2 ${
+                              isMine ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
+                            }`}
+                          >
+                            Replied to your story
+                          </div>
+                          <img
+                            src={m.sharedStory.image}
+                            className="w-24 h-40 object-cover rounded-lg mb-1"
+                          />
+                          {m.text && <p>{m.text}</p>}
+                        </div>
+                      ) : m.sharedPost ? (
                         <div>
                           <img
                             src={m.sharedPost.image}
