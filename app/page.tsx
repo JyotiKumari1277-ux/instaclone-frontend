@@ -416,7 +416,7 @@ export default function Home() {
     <div className="min-h-screen bg-white text-black dark:bg-black dark:text-white flex">
       <Sidebar />
 
-      <div className="flex-1 md:ml-20 lg:ml-72 flex justify-center gap-8 pt-16 md:pt-6 px-4 max-w-7xl mx-auto">
+<div className="flex-1 md:ml-20 lg:ml-72 md:w-[calc(100%-5rem)] lg:w-[calc(100%-18rem)] flex justify-center gap-8 pt-16 md:pt-6 px-4">
         {/* Main Feed */}
         <main className="max-w-xl w-full">
           {/* Stories row */}
